@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  # PostgreSQL with pgvector (only needed if not using local PostgreSQL 17)
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: evaluate_ai_postgres
+    environment:
+      POSTGRES_USER: evaluate_user
+      POSTGRES_PASSWORD: evaluate_pass
+      POSTGRES_DB: evaluate_ai
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Ollama LLM server
+  ollama:
+    image: ollama/ollama:latest
+    container_name: evaluate_ai_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    # GPU support (uncomment for NVIDIA GPU)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+volumes:
+  pgdata:
+  ollama_data:

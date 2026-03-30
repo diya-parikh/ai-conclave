@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Evaluate AI — Automated evaluation of handwritten student answer sheets using OCR, NLP, and AI">
+    <title>Evaluate AI — Login</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Auth Layout -->
+    <div class="auth-layout">
+        <div class="auth-card">
+            <!-- Header -->
+            <div class="auth-header">
+                <div class="auth-logo">📝</div>
+                <h1>Evaluate AI</h1>
+                <p>Automated handwritten answer evaluation</p>
+            </div>
+
+            <!-- Role Toggle -->
+            <div class="auth-toggle" id="auth-role-toggle">
+                <button class="active" data-role="teacher" id="toggle-teacher">Teacher</button>
+                <button data-role="student" id="toggle-student">Student</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" style="display: block;">
+                <div class="form-group">
+                    <label class="form-label" for="login-email">Email</label>
+                    <input type="email" id="login-email" class="form-input" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="login-password">Password</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg" style="width:100%;" id="login-btn">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label" for="register-name">Full Name</label>
+                    <input type="text" id="register-name" class="form-input" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="register-email">Email</label>
+                    <input type="email" id="register-email" class="form-input" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="register-password">Password</label>
+                    <input type="password" id="register-password" class="form-input" placeholder="Create a password (6+ characters)" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg" style="width:100%;" id="register-btn">
+                    Create Account
+                </button>
+            </form>
+
+            <!-- Toggle Auth Mode -->
+            <div class="auth-footer">
+                <span id="auth-mode-text">Don't have an account?</span>
+                <a href="#" id="auth-mode-link">Create one</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
