@@ -52,6 +52,13 @@ async def ingest_knowledge(
             detail=f"Invalid document_type. Must be one of: {valid_types}",
         )
 
+    # Validate file
+    if not file.filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must have a filename",
+        )
+
     # Save file locally
     knowledge_dir = os.path.join(settings.UPLOAD_DIR, "knowledge")
     os.makedirs(knowledge_dir, exist_ok=True)
@@ -67,9 +74,10 @@ async def ingest_knowledge(
     try:
         # Run ingestion pipeline
         ingestion_service = IngestionService()
+        file_type = file.content_type or "application/octet-stream"
         chunks_created = await ingestion_service.ingest(
             file_path=file_path,
-            file_type=file.content_type,
+            file_type=file_type,
             subject=subject,
             teacher_id=str(teacher.id),
             db=db,

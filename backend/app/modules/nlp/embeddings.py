@@ -5,7 +5,7 @@ Generates sentence embeddings using Sentence-BERT (sentence-transformers).
 Uses the model specified in configuration.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from app.core.config import settings
 
@@ -21,9 +21,9 @@ class EmbeddingGenerator:
     _instance = None  # Singleton pattern for model reuse
 
     def __init__(self):
-        self._model = None
+        self._model: Optional[Any] = None
 
-    def _load_model(self):
+    def _load_model(self) -> None:
         """Lazy-load the sentence-transformer model."""
         if self._model is None:
             from sentence_transformers import SentenceTransformer
@@ -43,6 +43,7 @@ class EmbeddingGenerator:
             return [0.0] * settings.EMBEDDING_DIMENSION
 
         self._load_model()
+        assert self._model is not None, "Model failed to load"
         embedding = self._model.encode(text, convert_to_numpy=True)
         return embedding.tolist()
 
@@ -62,5 +63,6 @@ class EmbeddingGenerator:
             return []
 
         self._load_model()
+        assert self._model is not None, "Model failed to load"
         embeddings = self._model.encode(texts, convert_to_numpy=True, batch_size=32)
         return [emb.tolist() for emb in embeddings]

@@ -49,6 +49,19 @@ async def upload_answer_sheet(
     - Stores file locally in uploads directory
     - Creates a document record in database
     """
+    # Validate file
+    if not file.filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must have a filename",
+        )
+
+    if not file.content_type:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must have a content type",
+        )
+
     # Validate file type
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(
@@ -59,8 +72,9 @@ async def upload_answer_sheet(
     # Read file content
     content = await file.read()
 
-    # Validate file size
-    if len(content) > settings.max_file_size_bytes:
+    # Validate file size (convert MB to bytes)
+    max_file_size_bytes = settings.MAX_FILE_SIZE_MB * 1024 * 1024
+    if len(content) > max_file_size_bytes:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail=f"File exceeds maximum size of {settings.MAX_FILE_SIZE_MB}MB",

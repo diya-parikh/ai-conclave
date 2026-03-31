@@ -6,7 +6,7 @@ Extracts linguistic features using spaCy:
 - Named Entity Recognition (NER)
 """
 
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
 
 class FeatureExtractor:
@@ -18,9 +18,9 @@ class FeatureExtractor:
     """
 
     def __init__(self):
-        self._nlp = None
+        self._nlp: Optional[Any] = None
 
-    def _load_model(self):
+    def _load_model(self) -> None:
         """Lazy-load spaCy model."""
         if self._nlp is None:
             import spacy
@@ -28,7 +28,7 @@ class FeatureExtractor:
                 self._nlp = spacy.load("en_core_web_sm")
             except OSError:
                 # Model not installed — download it
-                from spacy.cli import download
+                from spacy.cli.download import download
                 download("en_core_web_sm")
                 self._nlp = spacy.load("en_core_web_sm")
 
@@ -50,6 +50,7 @@ class FeatureExtractor:
             return {"pos_tags": [], "entities": []}
 
         self._load_model()
+        assert self._nlp is not None, "spaCy model failed to load"
         doc = self._nlp(text)
 
         # POS Tags

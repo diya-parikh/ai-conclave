@@ -10,7 +10,7 @@ Provides shared test fixtures including:
 import asyncio
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient, ASGITransport
+from httpx import AsyncClient
 
 from app.main import app
 from app.models.database import Base, engine, async_session_factory
@@ -35,8 +35,7 @@ async def db_session():
 @pytest_asyncio.fixture
 async def client():
     """Provide an async test client."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+    async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
 
 

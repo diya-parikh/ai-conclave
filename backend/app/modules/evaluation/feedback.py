@@ -5,7 +5,7 @@ Generates explainable feedback for student answers using Ollama LLM.
 Includes what's correct, what's missing, and contradiction detection.
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 from app.core.config import settings
 
@@ -21,9 +21,9 @@ class FeedbackGenerator:
     """
 
     def __init__(self):
-        self._llm = None
+        self._llm: Optional[Any] = None
 
-    def _load_llm(self):
+    def _load_llm(self) -> None:
         """Lazy-load the Ollama LLM via LangChain."""
         if self._llm is None:
             from langchain_ollama import OllamaLLM
@@ -53,11 +53,12 @@ class FeedbackGenerator:
             Dict with 'feedback' (string) and 'contradictions' (list).
         """
         self._load_llm()
+        assert self._llm is not None, "LLM failed to load"
 
         prompt = self._build_feedback_prompt(answer, context, score, max_marks)
 
         try:
-            response = self._llm.invoke(prompt)
+            response = await self._llm.ainvoke(prompt)
             return self._parse_feedback_response(response)
         except Exception as e:
             return {

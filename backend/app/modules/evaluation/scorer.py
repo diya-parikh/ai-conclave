@@ -5,7 +5,7 @@ Uses Ollama LLM to score student answers against reference context.
 Combines semantic similarity with LLM-based assessment.
 """
 
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from app.core.config import settings
 
@@ -20,9 +20,9 @@ class AnswerScorer:
     """
 
     def __init__(self):
-        self._llm = None
+        self._llm: Optional[Any] = None
 
-    def _load_llm(self):
+    def _load_llm(self) -> None:
         """Lazy-load the Ollama LLM via LangChain."""
         if self._llm is None:
             from langchain_ollama import OllamaLLM
@@ -52,11 +52,12 @@ class AnswerScorer:
             Dict with 'marks' (float) and 'confidence' (float).
         """
         self._load_llm()
+        assert self._llm is not None, "LLM failed to load"
 
         prompt = self._build_scoring_prompt(answer, context, max_marks)
 
         try:
-            response = self._llm.invoke(prompt)
+            response = await self._llm.ainvoke(prompt)
             result = self._parse_score_response(response, max_marks)
             return result
         except Exception as e:

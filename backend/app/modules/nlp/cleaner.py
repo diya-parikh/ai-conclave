@@ -10,7 +10,7 @@ Handles text cleaning and normalization:
 """
 
 import re
-from typing import Optional
+from typing import Optional, Set, Any
 
 
 class TextCleaner:
@@ -22,10 +22,10 @@ class TextCleaner:
     """
 
     def __init__(self):
-        self._stopwords = None
-        self._lemmatizer = None
+        self._stopwords: Optional[Set[str]] = None
+        self._lemmatizer: Optional[Any] = None
 
-    def _load_nltk_resources(self):
+    def _load_nltk_resources(self) -> None:
         """Lazy-load NLTK resources."""
         if self._stopwords is None:
             import nltk
@@ -72,6 +72,7 @@ class TextCleaner:
         # Optionally remove stopwords
         if remove_stopwords:
             self._load_nltk_resources()
+            assert self._stopwords is not None, "Stopwords failed to load"
             words = text.split()
             text = " ".join(w for w in words if w not in self._stopwords)
 
@@ -88,6 +89,7 @@ class TextCleaner:
             Lemmatized text.
         """
         self._load_nltk_resources()
+        assert self._lemmatizer is not None, "Lemmatizer failed to load"
         words = text.split()
         lemmatized = [self._lemmatizer.lemmatize(word) for word in words]
         return " ".join(lemmatized)

@@ -7,7 +7,7 @@ Handles the query phase of the RAG pipeline:
 3. Return top-K relevant knowledge chunks
 """
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from app.modules.nlp.embeddings import EmbeddingGenerator
 from app.modules.rag.vector_store import VectorStore
@@ -29,8 +29,8 @@ class QueryService:
     async def retrieve(
         self,
         query_text: str,
-        subject: str = None,
-        top_k: int = None,
+        subject: Optional[str] = None,
+        top_k: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         """
         Retrieve relevant knowledge chunks for a query.

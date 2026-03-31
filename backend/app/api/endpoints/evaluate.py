@@ -6,6 +6,7 @@ Teacher only — generates marks and explainable feedback.
 """
 
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -80,8 +81,8 @@ async def evaluate_document(
         )
 
         # Store per-question results
-        total_marks = 0
-        max_marks = 0
+        total_marks = Decimal(0)
+        max_marks = Decimal(0)
         question_responses = []
 
         for q_result in eval_results["questions"]:
@@ -96,8 +97,8 @@ async def evaluate_document(
                 confidence_score=q_result.get("confidence_score"),
             )
             db.add(qr)
-            total_marks += float(q_result.get("marks_awarded", 0))
-            max_marks += float(request.max_marks_per_question)
+            total_marks += Decimal(str(q_result.get("marks_awarded", 0)))
+            max_marks += Decimal(str(request.max_marks_per_question))
 
             question_responses.append(QuestionResultResponse(
                 question_id=q_result["question_id"],
@@ -110,13 +111,13 @@ async def evaluate_document(
             ))
 
         # Calculate final scores
-        percentage = (total_marks / max_marks * 100) if max_marks > 0 else 0
-        grade = _calculate_grade(percentage)
+        percentage: Decimal = (total_marks / max_marks * Decimal(100)) if max_marks > 0 else Decimal(0)
+        grade = _calculate_grade(float(percentage))
 
         # Update evaluation record
         evaluation.total_marks = total_marks
         evaluation.max_marks = max_marks
-        evaluation.percentage = percentage
+        evaluation.percentage = percentage  # Keep as Decimal for database
         evaluation.grade = grade
         evaluation.status = "completed"
         evaluation.evaluated_at = datetime.now(timezone.utc)

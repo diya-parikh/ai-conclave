@@ -7,7 +7,7 @@ RAG Query → Evaluation Engine → Result Processing
 This is invoked after OCR + NLP processing is complete.
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 from app.modules.rag.query_service import QueryService
 from app.modules.evaluation.service import EvaluationService
@@ -31,7 +31,7 @@ class PipelineService:
         self,
         extracted_text: Dict[str, str],
         processed_data: Dict[str, Any],
-        subject: str = None,
+        subject: Optional[str] = None,
         max_marks_per_question: float = 10.0,
     ) -> Dict[str, Any]:
         """
