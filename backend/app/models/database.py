@@ -5,6 +5,9 @@ Configures SQLAlchemy async engine, session factory, and Base class.
 Provides init_db() for table creation and get_db() for dependency injection.
 """
 
+from typing import AsyncGenerator
+
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
@@ -36,16 +39,19 @@ class Base(DeclarativeBase):
 async def init_db():
     """
     Initialize database tables.
-    Creates all tables defined by Base subclasses.
+    Creates pgvector extension if needed, then creates all tables defined by Base subclasses.
     In production, use Alembic migrations instead.
     """
     async with engine.begin() as conn:
+        # Enable pgvector extension
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
+        
         # Import all models to ensure they are registered with Base
         import app.models  # noqa: F401
         await conn.run_sync(Base.metadata.create_all)
 
 
-async def get_db() -> AsyncSession:
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     Dependency that provides an async database session.
     Automatically commits on success, rolls back on error.

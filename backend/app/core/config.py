@@ -21,8 +21,8 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     # ---- Database ----
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/evaluate_ai"
-    DATABASE_SYNC_URL: str = "postgresql+psycopg2://postgres:postgres@localhost:5432/evaluate_ai"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:aastha@localhost:5432/evaluate_ai"
+    DATABASE_SYNC_URL: str = "postgresql+psycopg2://postgres:aastha@localhost:5432/evaluate_ai"
 
     # ---- JWT Authentication ----
     SECRET_KEY: str = "change-this-secret-key-in-production"
