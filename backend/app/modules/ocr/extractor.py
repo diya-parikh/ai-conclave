@@ -1,113 +1,192 @@
 """
-Text Extractor
+Text + Diagram Extractor (Unified)
 
-Extracts text from preprocessed images using QWEN V3 Vision Model
-via Hugging Face Transformers.
+Single Qwen-Vision call per page that simultaneously:
+  • Transcribes all visible text (OCR), enforcing question/answer label line breaks
+  • Detects diagrams / figures / tables / graphs
+  • Produces a structured 5-field evaluation description per diagram inline
+    using <diagram> … </diagram> tags (no reconstruction / ASCII art)
+
+meta schema per page:
+    {
+        "diagram_present": bool,
+        "diagrams": [
+            {
+                "index":       int,  # 1-based order on this page
+                "description": str   # full evaluation block inside <diagram> tag
+            },
+            ...
+        ]
+    }
 """
 
-import io
-import base64
-from typing import List
+import re
+import requests
+from typing import List, Tuple, Dict
 
-from PIL import Image
 
-from app.core.config import settings
+# ------------------------------------------------------------------ #
+#  Prompt used for each page                                          #
+# ------------------------------------------------------------------ #
+
+_PAGE_PROMPT = """You are an expert OCR engine with advanced visual understanding \
+and diagram evaluation capability.
+
+Your task for this page image:
+
+1. TRANSCRIBE every word, number, symbol, and line of text exactly as written.
+   Do NOT skip, summarise, or paraphrase anything.
+
+   QUESTION / ANSWER LABEL FORMATTING RULE (apply before anything else):
+   Whenever you encounter a question or answer label in ANY of these forms —
+     Q1  Q1.  Q1)  Q-1  Q.1  Q 1
+     A1  A1.  A1)  A-1  A.1  A 1
+     a1  a1.  a1)  a-1  a.1  a 1
+     Ans1  Ans.1  Ans-1  Ans 1
+     1.   1)   (1)   8.1  8.2  (section-dot-number)
+   — ALWAYS place that label on its OWN line. Insert a newline BEFORE the label
+   and start the answer/question text on the NEXT line. Never run a label and
+   its content together on the same line.
+
+   Example: image shows "some text  A-2. Backpropagation is …"
+   Transcribe as:
+     some text
+     A-2.
+     Backpropagation is …
+
+2. DETECT diagrams, figures, graphs, tables, circuit diagrams, flowcharts,
+   geometric figures, or any non-text visual element.
+
+3. For EACH diagram / figure found, insert a structured evaluation block at the
+   exact position in the text where it appears, using this format:
+
+   <diagram index="N">
+   Type: <e.g. circuit diagram / bar graph / geometric figure / table / flowchart>
+
+   Key Labels:
+   <List every visible label, component name, node, axis title, legend entry, or
+   annotation. Note whether all required components are present and correctly named.
+   Flag any missing or mislabelled elements.>
+
+   Connections Between Elements:
+   <Describe how elements are connected — lines, arrows, edges, wires, branches.
+   Identify what connects to what and the nature of each connection (directed /
+   undirected, solid / dashed, single / double, etc.).>
+
+   Directionality:
+   <Describe the flow direction indicated by arrows or other directional markers.
+   State whether the direction is correct for the diagram type and context.>
+
+   Relative Positioning:
+   <Describe the spatial arrangement — left-to-right flow, top-down hierarchy,
+   input → process → output layout, radial structure, etc. Note whether the
+   layout matches the expected convention for this diagram type.>
+
+   Neatness / Presentation:
+   <Assess overall cleanliness and readability — straight lines, legible labels,
+   consistent spacing, absence of clutter or overlapping elements.>
+   </diagram>
+
+   Replace N with the diagram's order on this page (1, 2, 3 …).
+
+4. If there are NO diagrams on this page, output only the transcribed text.
+
+Return ONLY the structured content described above — no extra commentary,
+no markdown fences, no preamble.
+"""
 
 
 class TextExtractor:
-    """
-    Extracts text from handwritten answer sheet images using
-    QWEN V3 Vision Language Model via Hugging Face Transformers.
+    LM_STUDIO_URL: str = "http://192.168.28.1:1234/v1/chat/completions"
+    MODEL_NAME: str    = "qwen/qwen3-vl-4b"
+    MAX_TOKENS: int    = 4096          # diagram evaluation descriptions can be verbose
+    TEMPERATURE: float = 0
 
-    The model is loaded lazily on first use to avoid heavy
-    memory allocation at startup.
-    """
+    # Regex to find <diagram …> … </diagram> blocks
+    _DIAGRAM_RE = re.compile(
+        r'<diagram[^>]*index=["\']?(\d+)["\']?[^>]*>(.*?)</diagram>',
+        re.DOTALL | re.IGNORECASE,
+    )
 
-    def __init__(self):
-        self._model = None
-        self._processor = None
+    # ------------------------------------------------------------------ #
+    #  Public API                                                          #
+    # ------------------------------------------------------------------ #
 
-    def _load_model(self):
+    async def extract(self, image_paths: List[str]) -> List[Tuple[str, Dict]]:
         """
-        Lazy-load the QWEN V3 Vision model and processor.
+        Returns List of (structured_page_text, meta_dict).
 
-        TODO: Implement actual model loading:
-            from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
-            self._processor = AutoProcessor.from_pretrained(settings.QWEN_MODEL)
-            self._model = Qwen2VLForConditionalGeneration.from_pretrained(
-                settings.QWEN_MODEL,
-                torch_dtype="auto",
-                device_map="auto",
-            )
+        structured_page_text — raw model output with <diagram> blocks inline.
+        meta_dict            — parsed diagram info (see module docstring).
         """
-        # Placeholder — model loading is deferred to implementation phase
-        pass
+        if not image_paths:
+            return []
 
-    async def extract(self, images: List[Image.Image]) -> str:
-        """
-        Extract text from a list of preprocessed images.
+        results: List[Tuple[str, Dict]] = []
+        for i, image_path in enumerate(image_paths):
+            print(f"  [Page {i + 1}] Extracting text + diagrams...")
+            structured_text = self._extract_page(image_path)
+            meta = self._parse_meta(structured_text)
+            diagram_count = len(meta["diagrams"])
+            if diagram_count:
+                print(f"  [Page {i + 1}] ✓ {diagram_count} diagram(s) detected.")
+            results.append((structured_text, meta))
 
-        Sends each image to the QWEN V3 model with a prompt
-        instructing it to read and transcribe handwritten text.
+        return results
 
-        Args:
-            images: List of preprocessed PIL Image objects.
+    # ------------------------------------------------------------------ #
+    #  Core extraction                                                     #
+    # ------------------------------------------------------------------ #
 
-        Returns:
-            Concatenated extracted text from all images.
+    def _extract_page(self, image_path: str) -> str:
+        payload = self._build_payload(image_path)
+        response = requests.post(self.LM_STUDIO_URL, json=payload, timeout=300)
+        response.raise_for_status()
+        content = response.json()["choices"][0]["message"]["content"].strip()
+        # Strip Qwen3 <think> reasoning blocks
+        content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL)
+        return content.strip()
 
-        TODO: Implement actual QWEN V3 inference:
-            1. Load model if not loaded
-            2. For each image, create conversation with image + prompt
-            3. Process with model and decode output
-            4. Concatenate results
-        """
-        if not images:
-            return ""
+    def _build_payload(self, image_path: str) -> dict:
+        image_base64 = self._encode_image(image_path)
+        return {
+            "model":       self.MODEL_NAME,
+            "temperature": self.TEMPERATURE,
+            "max_tokens":  self.MAX_TOKENS,
+            "messages": [{
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": _PAGE_PROMPT},
+                    {"type": "image_url",
+                     "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}},
+                ],
+            }],
+        }
 
-        # Placeholder implementation
-        # In production, this calls the QWEN V3 model
-        extracted_texts = []
+    # ------------------------------------------------------------------ #
+    #  Meta parsing                                                        #
+    # ------------------------------------------------------------------ #
 
-        for i, image in enumerate(images):
-            text = await self._extract_single(image, page_num=i + 1)
-            extracted_texts.append(text)
+    def _parse_meta(self, structured_text: str) -> Dict:
+        diagrams = []
+        for match in self._DIAGRAM_RE.finditer(structured_text):
+            index = int(match.group(1))
+            description = match.group(2).strip()
+            diagrams.append({"index": index, "description": description})
 
-        return "\n\n".join(extracted_texts)
+        diagrams.sort(key=lambda d: d["index"])
 
-    async def _extract_single(self, image: Image.Image, page_num: int = 1) -> str:
-        """
-        Extract text from a single image using QWEN V3.
+        return {
+            "diagram_present": bool(diagrams),
+            "diagrams":        diagrams,
+        }
 
-        Args:
-            image: Preprocessed PIL Image.
-            page_num: Page number for context.
+    # ------------------------------------------------------------------ #
+    #  Utility                                                             #
+    # ------------------------------------------------------------------ #
 
-        Returns:
-            Extracted text string.
-
-        TODO: Implement the actual inference:
-            prompt = (
-                "You are reading a handwritten student answer sheet. "
-                "Please transcribe all the handwritten text accurately. "
-                "Preserve question numbers like Q1, Q2, etc. "
-                "Output the text exactly as written."
-            )
-            messages = [
-                {"role": "user", "content": [
-                    {"type": "image", "image": image},
-                    {"type": "text", "text": prompt},
-                ]}
-            ]
-            inputs = self._processor(messages, return_tensors="pt").to("cuda")
-            output_ids = self._model.generate(**inputs, max_new_tokens=2048)
-            return self._processor.decode(output_ids[0], skip_special_tokens=True)
-        """
-        # Placeholder — returns stub text for development
-        return f"[Page {page_num} — QWEN V3 OCR extraction pending implementation]"
-
-    def _image_to_base64(self, image: Image.Image) -> str:
-        """Convert PIL Image to base64 string."""
-        buffer = io.BytesIO()
-        image.save(buffer, format="PNG")
-        return base64.b64encode(buffer.getvalue()).decode("utf-8")
+    @staticmethod
+    def _encode_image(image_path: str) -> str:
+        import base64
+        with open(image_path, "rb") as f:
+            return base64.b64encode(f.read()).decode("utf-8")
