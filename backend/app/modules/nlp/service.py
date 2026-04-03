@@ -1,86 +1,136 @@
 """
 NLP Service
 
-Orchestrates the complete NLP processing pipeline:
+Orchestrates the lightweight NLP processing pipeline:
 1. Text cleaning and normalization
-2. Tokenization (NLTK / spaCy)
-3. Feature extraction (POS, NER)
-4. Sentence embedding generation (Sentence-BERT)
+2. Sentence tokenization & intelligent chunking
+3. Semantic chunk typing/classification
+4. Sentence-BERT embedding generation per chunk
 """
 
-from typing import Dict, Any
+import json
+from typing import Dict, List, Any, Union
 
 from app.modules.nlp.cleaner import TextCleaner
-from app.modules.nlp.tokenizer import TextTokenizer
-from app.modules.nlp.features import FeatureExtractor
+from app.modules.nlp.chunker import TextChunker
+from app.modules.nlp.classifier import ChunkClassifier
 from app.modules.nlp.embeddings import EmbeddingGenerator
 
 
 class NLPService:
     """
-    Orchestrates the NLP processing pipeline for student answers.
+    Orchestrates the simplified text processing pipeline optimized for RAG.
 
-    Takes structured question-answer text from OCR and produces
-    cleaned text, linguistic features, and embeddings.
-
-    Usage:
-        service = NLPService()
-        result = await service.process({"Q1": "answer text", ...})
+    Takes structured JSON from OCR, cleans text, splits into semantic chunks,
+    classifies chunks, and generates embeddings per chunk.
     """
 
     def __init__(self):
         self.cleaner = TextCleaner()
-        self.tokenizer = TextTokenizer()
-        self.feature_extractor = FeatureExtractor()
+        self.chunker = TextChunker()
+        self.classifier = ChunkClassifier()
         self.embedding_generator = EmbeddingGenerator()
 
-    async def process(self, extracted_text: Dict[str, str]) -> Dict[str, Any]:
+    async def process(self, extracted_data: Union[str, List[Dict[str, Any]], Dict[str, str]]) -> Dict[str, Any]:
         """
-        Process extracted text through the NLP pipeline.
+        Process extracted text through the RAG-optimized NLP pipeline.
 
         Args:
-            extracted_text: Dict mapping question IDs to raw answer text.
-                Example: {"Q1": "The CPU processes...", "Q2": "..."}
+            extracted_data: Module 1 output mapping format.
 
         Returns:
-            Dict with processed data for each question:
+            Dict mapping question IDs to the original answer and evaluated chunks:
             {
                 "Q1": {
-                    "original_text": "...",
-                    "cleaned_text": "...",
-                    "tokens": [...],
-                    "sentences": [...],
-                    "pos_tags": [...],
-                    "entities": [...],
-                    "embedding": [0.1, 0.2, ...],
-                },
-                ...
+                    "original_answer": "...",
+                    "chunks": [
+                        {
+                            "chunk_id": "Q1_chunk_1",
+                            "chunk": "...",
+                            "embedding": [...],
+                            "metadata": {
+                                "question_id": "Q1",
+                                "diagram_present": False,
+                                "diagram_description": "",
+                                "source": "student_answer",
+                                "type": "definition"
+                            }
+                        }
+                    ]
+                }
             }
         """
-        processed = {}
+        if isinstance(extracted_data, str):
+            if extracted_data.endswith('.docx'):
+                extracted_data = extracted_data.replace('.docx', '.json')
+            if extracted_data.endswith('.json'):
+                try:
+                    with open(extracted_data, 'r', encoding='utf-8') as f:
+                        records = json.load(f)
+                except Exception:
+                    records = []
+            else:
+                records = []
+        elif isinstance(extracted_data, dict):
+            records = [
+                {
+                    "question_id": k,
+                    "answer": v,
+                    "diagram_present": False,
+                    "diagram_description": ""
+                }
+                for k, v in extracted_data.items()
+            ]
+        elif isinstance(extracted_data, list):
+            records = extracted_data
+        else:
+            records = []
 
-        for question_id, text in extracted_text.items():
+        processed_output = {}
+
+        for record in records:
+            question_id = record.get("question_id")
+            answer_text = record.get("answer", "")
+            diagram_present = record.get("diagram_present", False)
+            diagram_description = record.get("diagram_description", "")
+
+            if not question_id:
+                continue
+
             # Step 1: Clean and normalize text
-            cleaned_text = self.cleaner.clean(text)
+            cleaned_text = self.cleaner.clean(answer_text)
 
-            # Step 2: Tokenize
-            tokens = self.tokenizer.tokenize_words(cleaned_text)
-            sentences = self.tokenizer.tokenize_sentences(cleaned_text)
-
-            # Step 3: Extract linguistic features
-            features = self.feature_extractor.extract(cleaned_text)
-
-            # Step 4: Generate sentence embedding
-            embedding = await self.embedding_generator.generate(cleaned_text)
-
-            processed[question_id] = {
-                "original_text": text,
-                "cleaned_text": cleaned_text,
-                "tokens": tokens,
-                "sentences": sentences,
-                "pos_tags": features.get("pos_tags", []),
-                "entities": features.get("entities", []),
-                "embedding": embedding,
+            # Assign question-level structure
+            processed_output[question_id] = {
+                "original_answer": cleaned_text,
+                "chunks": []
             }
 
-        return processed
+            # Step 2: Chunking
+            chunks = self.chunker.chunk(cleaned_text)
+
+            # Step 3: Generate embeddings per chunk
+            if chunks:
+                embeddings = await self.embedding_generator.generate_batch(chunks)
+            else:
+                embeddings = []
+
+            # Step 4: Classification and Data Assembly
+            for index, (chunk_text, embedding) in enumerate(zip(chunks, embeddings), start=1):
+                chunk_type = self.classifier.classify(chunk_text)
+                chunk_id = f"{question_id}_chunk_{index}"
+
+                processed_output[question_id]["chunks"].append({
+                    "chunk_id": chunk_id,
+                    "chunk": chunk_text,
+                    "embedding": embedding,
+                    "metadata": {
+                        "question_id": question_id,
+                        "diagram_present": diagram_present,
+                        "diagram_description": diagram_description,
+                        "source": "student_answer",
+                        "type": chunk_type
+                    }
+                })
+
+        return processed_output

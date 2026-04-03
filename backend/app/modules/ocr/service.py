@@ -57,7 +57,7 @@ class OCRService:
     #  Main entry point                                                    #
     # ------------------------------------------------------------------ #
 
-    async def process(self, file_path: str, file_type: str) -> str:
+    async def process(self, file_path: str, file_type: str) -> List[Dict[str, Any]]:
         pdf_name   = os.path.splitext(os.path.basename(file_path))[0]
         output_dir = os.path.join(os.path.dirname(file_path), "OCR_Result")
         os.makedirs(output_dir, exist_ok=True)
@@ -90,7 +90,11 @@ class OCRService:
         json_path = self.postprocessor.process(output_doc_path, page_results)
         print(f"Q&A JSON saved: {json_path}")
 
-        return output_doc_path
+        import json
+        with open(json_path, 'r', encoding='utf-8') as f:
+            records = json.load(f)
+
+        return records
 
     # ------------------------------------------------------------------ #
     #  DOCX builder                                                        #

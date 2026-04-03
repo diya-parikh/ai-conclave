@@ -1,8 +1,8 @@
 """
 Embedding Generator
 
-Generates sentence embeddings using Sentence-BERT (sentence-transformers).
-Uses the model specified in configuration.
+Generates sequence embeddings from text chunks using Sentence-BERT.
+Specifically designed to process semantic chunks rather than full answers.
 """
 
 from typing import List, Optional, Any
@@ -12,7 +12,7 @@ from app.core.config import settings
 
 class EmbeddingGenerator:
     """
-    Generates sentence embeddings using Sentence-BERT.
+    Generates embeddings from semantic chunks using Sentence-BERT.
 
     Lazy-loads the model on first use. Uses the model specified
     in settings.EMBEDDING_MODEL (default: all-MiniLM-L6-v2).
@@ -29,40 +29,40 @@ class EmbeddingGenerator:
             from sentence_transformers import SentenceTransformer
             self._model = SentenceTransformer(settings.EMBEDDING_MODEL)
 
-    async def generate(self, text: str) -> List[float]:
+    async def generate(self, chunk: str) -> List[float]:
         """
-        Generate embedding for a single text.
+        Generate embedding for a single text chunk.
 
         Args:
-            text: Input text string.
+            chunk: Input text chunk.
 
         Returns:
             List of float values representing the embedding vector.
         """
-        if not text:
+        if not chunk:
             return [0.0] * settings.EMBEDDING_DIMENSION
 
         self._load_model()
         assert self._model is not None, "Model failed to load"
-        embedding = self._model.encode(text, convert_to_numpy=True)
+        embedding = self._model.encode(chunk, convert_to_numpy=True)
         return embedding.tolist()
 
-    async def generate_batch(self, texts: List[str]) -> List[List[float]]:
+    async def generate_batch(self, chunks: List[str]) -> List[List[float]]:
         """
-        Generate embeddings for multiple texts in batch.
+        Generate embeddings for multiple chunks in batch.
 
-        More efficient than generating one at a time.
+        Highly optimized for RAG since it vectorizes semantic chunks efficiently.
 
         Args:
-            texts: List of input text strings.
+            chunks: List of input chunk texts.
 
         Returns:
             List of embedding vectors.
         """
-        if not texts:
+        if not chunks:
             return []
 
         self._load_model()
         assert self._model is not None, "Model failed to load"
-        embeddings = self._model.encode(texts, convert_to_numpy=True, batch_size=32)
+        embeddings = self._model.encode(chunks, convert_to_numpy=True, batch_size=32)
         return [emb.tolist() for emb in embeddings]
