@@ -2,15 +2,16 @@
 Image Preprocessor
 
 Handles image preprocessing for OCR:
-- PDF to image conversion
+- PDF to image conversion (via pdf2image + Poppler)
 - Noise removal
 - Skew correction
 - Binarization
 - Contrast enhancement
 """
 
-import io
-from typing import List
+import os
+import tempfile
+from typing import List, Tuple
 
 from PIL import Image, ImageFilter, ImageEnhance
 
@@ -19,58 +20,77 @@ class ImagePreprocessor:
     """
     Preprocesses document images to improve OCR accuracy.
 
-    Applies a series of transformations to clean and normalize
-    handwritten answer sheet images before text extraction.
+    Saves processed images to a temporary directory on disk and returns
+    their file paths (required by TextExtractor, which encodes images
+    from disk as base64).
+
+    Returns:
+        (image_paths, temp_dir) — caller is responsible for deleting
+        temp_dir after use (OCRService already does this in its finally block).
     """
 
-    async def preprocess(self, file_path: str, file_type: str) -> List[Image.Image]:
+    async def preprocess(
+        self, file_path: str, file_type: str
+    ) -> Tuple[List[str], str]:
         """
-        Preprocess a document file into clean images.
+        Preprocess a document file into clean images saved to disk.
 
         Args:
-            file_path: Path to the file.
-            file_type: MIME type of the file.
+            file_path: Path to the source file.
+            file_type: MIME type (e.g. "application/pdf").
 
         Returns:
-            List of preprocessed PIL Image objects.
+            Tuple of (list_of_image_paths, temp_directory_path).
         """
-        # Convert file to images
-        if "pdf" in file_type:
-            images = await self._pdf_to_images(file_path)
-        else:
-            images = [Image.open(file_path)]
+        temp_dir = tempfile.mkdtemp(prefix="ocr_pages_")
 
-        # Apply preprocessing pipeline to each image
-        processed_images = []
-        for img in images:
+        # Convert source file → PIL images
+        if "pdf" in file_type:
+            pil_images = await self._pdf_to_images(file_path)
+        else:
+            pil_images = [Image.open(file_path)]
+
+        # Apply preprocessing pipeline and save each page to disk
+        image_paths: List[str] = []
+        for i, img in enumerate(pil_images):
             img = self._convert_to_grayscale(img)
             img = self._remove_noise(img)
             img = self._enhance_contrast(img)
             img = self._binarize(img)
-            processed_images.append(img)
 
-        return processed_images
+            out_path = os.path.join(temp_dir, f"page_{i + 1:04d}.jpg")
+            img.save(out_path, format="JPEG", quality=95)
+            image_paths.append(out_path)
+
+        return image_paths, temp_dir
+
+    # ------------------------------------------------------------------ #
+    #  PDF → PIL images                                                    #
+    # ------------------------------------------------------------------ #
 
     async def _pdf_to_images(self, pdf_path: str) -> List[Image.Image]:
         """
-        Convert PDF pages to PIL Images.
+        Convert every PDF page to a PIL Image using pdf2image + Poppler.
 
-        Uses PyPDF2 for extraction. For production, consider
-        using pdf2image with poppler for higher quality rendering.
-
-        TODO: Integrate pdf2image for better PDF rendering quality.
+        Requires:
+            pip install pdf2image
+            Poppler binaries on PATH  (https://github.com/oschwartz10612/poppler-windows/releases)
         """
-        # Placeholder: In production, use pdf2image
-        # from pdf2image import convert_from_path
-        # return convert_from_path(pdf_path, dpi=300)
-
-        # For now, try to open as image (works for single-page image-PDFs)
         try:
-            img = Image.open(pdf_path)
-            return [img]
-        except Exception:
-            # Return empty list — caller should handle gracefully
-            return []
+            from pdf2image import convert_from_path
+            pages = convert_from_path(pdf_path, dpi=300)
+            return pages
+        except ImportError:
+            raise RuntimeError(
+                "pdf2image is not installed. Run: pip install pdf2image\n"
+                "Also ensure Poppler is installed and its bin/ folder is on PATH."
+            )
+        except Exception as e:
+            raise RuntimeError(f"PDF conversion failed for '{pdf_path}': {e}") from e
+
+    # ------------------------------------------------------------------ #
+    #  Image transforms                                                    #
+    # ------------------------------------------------------------------ #
 
     def _convert_to_grayscale(self, image: Image.Image) -> Image.Image:
         """Convert image to grayscale."""

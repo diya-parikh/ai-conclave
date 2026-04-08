@@ -1,0 +1,50 @@
+[
+  {
+    "question_id": "Q1",
+    "answer": "Q-1.\nArtificial Neural Network\nBiological neural network\n→ Computational models → Natural neural systems\nInspired by human brain present in living beings\nused for machine learning task, such as: humans.\n→ It is organised in complex → Complex network of\nlayers with weighted connections. neurons connected\nvia synapses.\n→ Learning occurs through → learning is through\nalgorithms like gradient experience and\ndescent and backpropagation. synaptic plasticity.\n→ Fast processing with modern → slower compared to\nhardware. ANNs but efficient.\n→ Less robust. → Highly fault tolerant\n→ Requires structured, formatted → can handle noisy\ndata. ambiguous data.\n→ Designed for specific tasks. → Highly flexible and\ncapable of general\nintelligence.\nThus, Artificial neural networks are simplified\ncomputational models inspired by Biological\nneural Networks, but they lack complexity,\nadaptability, and efficiency of real brain systems.",
+    "diagram_present": false,
+    "diagram_description": ""
+  },
+  {
+    "question_id": "Q2",
+    "answer": "A-2.\nBackpropagation is a supervised learning algorithm\nused to train artificial neural networks. It\nworks by calculating the error at the output\nand propagating it backwards through the network\nusing this error, the algorithm adjusts weights\nand biases to minimise the loss function. It\nrelies on the chain rule of differentiation for\nefficient computation of gradients.\nAlgorithm -\nstep 1: Initialise parameters : Initialise weights\nand biases with small random values.\nstep 2: Forward propagation : Pass input through\nthe network layer by layer. Compute:\nZ = w.x + b and apply activation\nfunction, to predict output ˆy.\nstep 3: Compute Loss : Calculate error using a\nloss function.\nL = 1/2 (y - ˆy)²\nstep 4: Backward Propagation : Compute gradient\nof loss w.r.t output. Use chain rule to\npropagate error backward through each\nlayer. Calculate gradients -",
+    "diagram_present": false,
+    "diagram_description": ""
+  },
+  {
+    "question_id": "Q3",
+    "answer": "A-3\nA convolutional neural network is a type of\ndeep learning model specifically designed for\nprocessing grid like data - such as: images.\nIt automatically learns spatial features like -\nedges, textures, and patterns using convolution\noperations.\nA typical CNN consists of: Input layer,\nConvolution layer, Activation Function, Pooling\nlayer or subsampling, fully connected layer\nand the output layer.\nworking of CNN:\na) Input Image - The Input Image is provided to",
+    "diagram_present": false,
+    "diagram_description": ""
+  },
+  {
+    "question_id": "Q4",
+    "answer": "",
+    "diagram_present": true,
+    "diagram_description": "Type: Flowchart / Process diagram\n\nKey Labels:\nINPUT IMAGE\nCONVOLUTION\nLAYER\nReLU\nACTIVATION\nFLATTENING\nPOOLING\nLAYER\nFULLY\nCONNECTED\nLAYER\nOUTPUT\n\nConnections Between Elements:\n- A directed arrow connects INPUT IMAGE → CONVOLUTION LAYER.\n- A directed arrow connects CONVOLUTION LAYER → ReLU ACTIVATION.\n- A directed arrow connects ReLU ACTIVATION → FLATTENING.\n- A directed arrow connects FLATTENING → POOLING LAYER.\n- A directed arrow connects POOLING LAYER → FULLY CONNECTED LAYER.\n- A directed arrow connects FULLY CONNECTED LAYER → OUTPUT.\n\nDirectionality:\n- All connections are directed, indicating a sequential flow from input to output.\n- Directionality is correct for a process flow diagram.\n\nRelative Positioning:\n- The diagram is arranged in a left-to-right horizontal flow.\n- The layout follows a standard neural network architecture: input → convolution → activation → pooling → flattening → fully connected → output.\n- The spatial arrangement matches the expected convention for a flowchart of a CNN architecture.\n\nNeatness / Presentation:\n- The diagram is clean and legible.\n- Labels are clearly written and spaced.\n- Arrows are straight and unambiguous.\n- No overlapping or cluttered elements."
+  },
+  {
+    "question_id": "Q5",
+    "answer": "A-4\nRNN is a type of neural network designed to\nhandle sequential data such as text, time series\nor speech. It has the ability to retain information\nfrom previous inputs using a hidden state.\nArchitecture of RNN:\nInput layer → Hidden layer → output layer\nInput layer - Takes sequential data as input and\neach input is processed one step at\na time.\nHidden layer - It is the key feature of RNN: h_t.\nIt stores information of previous\ntime steps. The hidden state is updated using:\nh_t = f(w_h h_{t-1} + w_x x_t + b)\nThis created a loop allowing past information to\ninfluence current output. The same weights\nare shared across all time steps.\noutput layer - produces output at each time\nstep or at: the final step. Output\nis calculated as: y_t = g(W_h h_t + b)",
+    "diagram_present": false,
+    "diagram_description": ""
+  },
+  {
+    "question_id": "Q6",
+    "answer": "A-5\nLSTM is a special type of RNN designed to\novercome vanishing gradient problem. It is\ncapable of learning long term dependencies\nusing a memory cell & a gating mechanism.\nLSTM is built using :-\nStart with sequential input data\nReplace standard RNNs with LSTM cells\nstack one or more LSTM layers\nconnect to fully connected output\nlayer\nInternal components: -\ncell state - acts as long term memory of network\nand carry important information\nacross time steps",
+    "diagram_present": false,
+    "diagram_description": ""
+  },
+  {
+    "question_id": "Q7",
+    "answer": "forget gate - decides what information to discard\nfrom previous cell state .\n\nInput gate - decides what new information to store\nin cell state .\n\ncandidate cell state - creates new candidate\nvalues to be added to memory.\n\noutput gate - Determines the output based on cell\nstate .\n\nc_t-1 → [X] → [+] → c_t\n        ↓     ↓     ↓\n        i_t   ^c_t  o_t\n        ↓     ↓     ↓\n        [σ]  [tanh] [σ]\n        ↓     ↓     ↓\n        h_t-1 → [X] → h_t\n        ↓\n        x_t\nforget gate   Input gate   output gate\nLSTM UNIT DIAGRAM",
+    "diagram_present": false,
+    "diagram_description": ""
+  },
+  {
+    "question_id": "Q8",
+    "answer": "A-6\nGAN is a deep learning model consisting of 2\nnetworks: generator and discriminator that\ncompete with each other. The goal is to generate\nrealistic data samples that are indistinguishable\nfrom real data.\n\n\n\nstep1: Input noise generation - Random noise\nvector is generated and given as input to\ngenerator which processes the noise and\nproduces fake data samples. Objective is to\ngenerate data that closely resembles real data.\n\nstep2: Inputs to discriminator - Both the real and\n\n=== PAGE 9 ===\nfake generated data are fed to discriminator.\nThe discriminator evaluates inputs and classifies\nthem as real or fake. It is trained correctly\ndistinguish between real and generated data.\n\nStep 3: Feedback to generator - The generator\nreceives feedback based on how well it fooled\nthe discriminator. Using this feedback, it\nupdates it parameters to generate more realistic\ndata.\n\nstep 4: Adversarial training process - Both the\nnetworks are trained simultaneously in a\ncompetitive manner. The generator improves its\nability to fool discriminator while discriminator\nbecomes better at detection.\n\nstep 5: convergence - Training continues until\ngenerator produces highly realistic data that\nthe discriminator can no longer easily distinguish\nfrom real data.",
+    "diagram_present": true,
+    "diagram_description": "Type: flowchart\n\nKey Labels:\nRandom Noise\nGenerator G\nGenerated fake samples\nTraining Data\nReal samples\nDiscriminator D\nGenerator Loss\nDiscriminator Loss\nbackpropagation\nbackpropagation\n\nConnections Between Elements:\n- A downward arrow connects \"Random Noise\" to \"Generator G\".\n- A downward arrow connects \"Generator G\" to \"Generated fake samples\".\n- A downward arrow connects \"Training Data\" to \"Real samples\".\n- A downward arrow connects \"Real samples\" to \"Discriminator D\".\n- A downward arrow connects \"Generated fake samples\" to \"Discriminator D\".\n- A downward arrow connects \"Discriminator D\" to \"Generator Loss\".\n- A downward arrow connects \"Discriminator D\" to \"Discriminator Loss\".\n- A curved arrow labeled \"backpropagation\" connects \"Discriminator Loss\" to \"Generator G\".\n- A curved arrow labeled \"backpropagation\" connects \"Discriminator Loss\" to \"Discriminator D\".\n\nDirectionality:\n- All arrows are directed downward or toward the loss nodes, indicating data flow and feedback.\n- The \"backpropagation\" arrows indicate feedback signals from loss to the respective networks.\n\nRelative Positioning:\n- The diagram is arranged in a top-down flow, with \"Random Noise\" and \"Training Data\" at the top.\n- \"Generator G\" and \"Real samples\" are horizontally aligned.\n- \"Discriminator D\" is centered below them.\n- \"Generator Loss\" and \"Discriminator Loss\" are at the bottom, with feedback arrows curving upward.\n\nNeatness / Presentation:\n- The diagram is clear and legible, with distinct boxes and arrows.\n- Labels are written clearly, though some handwriting is slightly messy.\n- The layout is logical and follows a standard GAN training flow."
+  }
+]

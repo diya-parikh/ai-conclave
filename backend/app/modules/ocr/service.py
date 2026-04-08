@@ -2,7 +2,7 @@
 OCR Service (Diagram-Aware)
 
 Pipeline:
-  1. Preprocess PDF pages into images.
+  1. Preprocess PDF pages into images (saved to a temp dir on disk).
   2. Unified Qwen-Vision call per page — extracts text AND produces a structured
      evaluation description for each diagram inline using <diagram> … </diagram> tags.
   3. Build a rich .docx:
@@ -15,8 +15,10 @@ Pipeline:
 
 from __future__ import annotations
 
+import json
 import os
 import re
+import shutil
 from typing import List, Tuple, Dict, Any
 
 from docx import Document
@@ -44,8 +46,8 @@ class OCRService:
 
     Usage:
         service = OCRService()
-        result = await service.process("path/to/file.pdf", "application/pdf")
-        # result = {"Q1": "answer text", "Q2": "answer text", ...}
+        records = await service.process("path/to/file.pdf", "application/pdf")
+        # records = [{"question_id": "Q1", "answer": "...", ...}, ...]
     """
 
     def __init__(self):
@@ -64,22 +66,27 @@ class OCRService:
         output_doc_path = os.path.join(output_dir, pdf_name + ".docx")
 
         image_paths: List[str] = []
+        temp_dir: str = ""
+
         try:
-            # Step 1 — Preprocess
+            # Step 1 — Preprocess: returns (list_of_paths, temp_dir)
             print(f"\nPreprocessing {pdf_name}...")
-            image_paths, _ = await self.preprocessor.preprocess(file_path, file_type)
+            image_paths, temp_dir = await self.preprocessor.preprocess(
+                file_path, file_type
+            )
+            print(f"  {len(image_paths)} page(s) preprocessed → {temp_dir}")
 
             # Step 2 — Unified OCR + diagram extraction
             print(f"Running unified OCR + diagram extraction on "
                   f"{len(image_paths)} page(s)...")
-            page_results: List[Tuple[str, Dict]] = await self.extractor.extract(image_paths)
+            page_results: List[Tuple[str, Dict]] = await self.extractor.extract(
+                image_paths
+            )
 
         finally:
-            for path in image_paths:
-                try:
-                    os.remove(path)
-                except OSError:
-                    pass
+            # Always clean up temp images, even if extraction failed
+            if temp_dir and os.path.isdir(temp_dir):
+                shutil.rmtree(temp_dir, ignore_errors=True)
 
         # Step 3 — Build rich DOCX
         print("Building DOCX...")
@@ -90,7 +97,6 @@ class OCRService:
         json_path = self.postprocessor.process(output_doc_path, page_results)
         print(f"Q&A JSON saved: {json_path}")
 
-        import json
         with open(json_path, 'r', encoding='utf-8') as f:
             records = json.load(f)
 
@@ -137,11 +143,7 @@ class OCRService:
 
     def _add_diagram_block(self, doc_obj: Any, raw_block: str) -> None:
         """
-        Render a <diagram …> … </diagram> block as a visually distinct section:
-          ┌──────────────────────────────────────┐
-          │  [Diagram N — Evaluation]            │  ← bold, shaded heading paragraph
-          │  <structured description text>       │  ← monospace paragraphs
-          └──────────────────────────────────────┘
+        Render a <diagram …> … </diagram> block as a visually distinct section.
         """
         # Extract the inner content
         inner_match = re.search(
