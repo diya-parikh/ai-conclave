@@ -7,14 +7,16 @@ into the vector store for RAG retrieval.
 
 import os
 import uuid
+from typing import List
 
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.database import get_db
 from app.models.user import User
 from app.models.knowledge import KnowledgeDocument
-from app.models.schemas import KnowledgeIngestResponse
+from app.models.schemas import KnowledgeIngestResponse, KnowledgeDocumentListResponse
 from app.api.dependencies import require_teacher
 from app.modules.ingestion.service import IngestionService
 from app.core.config import settings
@@ -116,3 +118,22 @@ async def ingest_knowledge(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Ingestion failed: {str(e)}",
         )
+
+
+@router.get("/", response_model=List[KnowledgeDocumentListResponse])
+async def list_knowledge_documents(
+    teacher: User = Depends(require_teacher),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    List all knowledge documents uploaded by this teacher.
+
+    - **Teacher only**
+    """
+    result = await db.execute(
+        select(KnowledgeDocument)
+        .where(KnowledgeDocument.teacher_id == teacher.id)
+        .order_by(KnowledgeDocument.ingested_at.desc())
+    )
+    docs = result.scalars().all()
+    return [KnowledgeDocumentListResponse.model_validate(d) for d in docs]

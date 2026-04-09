@@ -41,8 +41,9 @@ from typing import Optional
 import httpx
 
 # ── Ollama config ─────────────────────────────────────────────────────────────
-OLLAMA_BASE_URL = "http://localhost:11434"
-OLLAMA_MODEL    = "phi4-mini"   # swap for "llama3", "mistral", etc.
+from app.core.config import settings as _settings
+OLLAMA_BASE_URL = _settings.OLLAMA_BASE_URL
+OLLAMA_MODEL    = _settings.OLLAMA_MODEL
 TEMPERATURE_LOW = 0.1           # deterministic scoring
 TEMPERATURE_MED = 0.3           # feedback / rationale
 

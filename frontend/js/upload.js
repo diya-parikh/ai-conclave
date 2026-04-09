@@ -172,7 +172,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---- Knowledge Base Upload ----
-    if (knowledgeFileInput) {
+    if (knowledgeUploadZone && knowledgeFileInput) {
+        // Drag & drop for knowledge zone
+        knowledgeUploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            knowledgeUploadZone.classList.add('drag-over');
+        });
+
+        knowledgeUploadZone.addEventListener('dragleave', () => {
+            knowledgeUploadZone.classList.remove('drag-over');
+        });
+
+        knowledgeUploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            knowledgeUploadZone.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                selectedKnowledgeFile = files[0];
+                knowledgeBtn.disabled = false;
+            }
+        });
+
         knowledgeFileInput.addEventListener('change', () => {
             if (knowledgeFileInput.files.length > 0) {
                 selectedKnowledgeFile = knowledgeFileInput.files[0];
@@ -207,6 +227,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 knowledgeBtn.disabled = true;
                 knowledgeBtn.textContent = '📚 Ingest Document';
 
+                // Refresh the ingested documents list
+                loadKnowledgeDocuments();
+
             } catch (error) {
                 showToast(error.message, 'error');
                 knowledgeBtn.disabled = false;
@@ -215,3 +238,52 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+/**
+ * Load and render the list of ingested knowledge documents.
+ * Called on page load and after successful ingestion.
+ */
+async function loadKnowledgeDocuments() {
+    const container = $('#knowledge-list');
+    if (!container) return;
+
+    try {
+        const docs = await api.getKnowledgeDocuments();
+
+        if (!docs || docs.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📚</div>
+                    <h3>No documents ingested</h3>
+                    <p>Upload model answers or reference materials to build the knowledge base.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const typeLabels = {
+            model_answer: 'Model Answer',
+            textbook: 'Textbook',
+            notes: 'Notes',
+        };
+
+        container.innerHTML = docs.map(doc => `
+            <div class="flex items-center gap-4" style="padding: var(--space-3) 0; border-bottom: 1px solid var(--border-primary);">
+                <div style="font-size: 1.5rem;">📄</div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 500; font-size: var(--font-size-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${doc.filename}</div>
+                    <div style="font-size: var(--font-size-xs); color: var(--text-tertiary);">
+                        ${doc.subject || '—'} · ${typeLabels[doc.document_type] || doc.document_type}
+                    </div>
+                </div>
+                <div style="text-align: right; flex-shrink: 0;">
+                    <div style="font-size: var(--font-size-xs); font-weight: 600;">${doc.total_chunks} chunks</div>
+                    <div style="font-size: var(--font-size-xs); color: var(--text-tertiary);">${formatDate(doc.ingested_at)}</div>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error('Failed to load knowledge documents:', error);
+    }
+}

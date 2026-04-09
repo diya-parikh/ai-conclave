@@ -127,4 +127,8 @@ const api = {
             body: formData,
         });
     },
+
+    async getKnowledgeDocuments() {
+        return this.request('/knowledge/');
+    },
 };

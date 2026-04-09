@@ -181,6 +181,19 @@ class KnowledgeIngestResponse(BaseModel):
         from_attributes = True
 
 
+class KnowledgeDocumentListResponse(BaseModel):
+    """Knowledge document summary for list views."""
+    id: uuid.UUID
+    filename: str
+    subject: Optional[str] = None
+    document_type: str
+    total_chunks: int
+    ingested_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 # ============================================================
 # Dashboard Schemas
 # ============================================================

@@ -1,0 +1,162 @@
+{
+  "Q1": {
+    "original_answer": "q-1. artificial neural network biological neural network → computational models → natural neural systems inspired by human brain present in living beings used for machine learning task, such as: humans. → it is organised in complex → complex network of layers with weighted connections. neurons connected via synapses. → learning occurs through → learning is through algorithms like gradient experience and descent and backpropagation. synaptic plasticity. → fast processing with modern → slower compared to hardware. anns but efficient. → less robust. → highly fault tolerant → requires structured, formatted → can handle noisy data. ambiguous data. → designed for specific tasks. → highly flexible and capable of general intelligence. thus, artificial neural networks are simplified computational models inspired by biological neural networks, but they lack complexity, adaptability, and efficiency of real brain systems.",
+    "chunks": [
+      {
+        "chunk_id": "Q1_chunk_1",
+        "chunk": "q-1. artificial neural network biological neural network → computational models → natural neural systems inspired by human brain present in living beings used for machine learning task, such as: humans. → it is organised in complex → complex network of layers with weighted connections. neurons connected via synapses. → learning occurs through → learning is through algorithms like gradient experience and descent and backpropagation. synaptic plasticity. → fast processing with modern → slower compared to hardware. anns but efficient. → less robust. → highly fault tolerant → requires structured, formatted → can handle noisy data. ambiguous data. → designed for specific tasks. → highly flexible and capable of general intelligence.",
+        "metadata": {
+          "question_id": "Q1",
+          "diagram_present": false,
+          "diagram_description": "",
+          "source": "student_answer",
+          "type": "definition"
+        }
+      },
+      {
+        "chunk_id": "Q1_chunk_2",
+        "chunk": "thus, artificial neural networks are simplified computational models inspired by biological neural networks, but they lack complexity, adaptability, and efficiency of real brain systems.",
+        "metadata": {
+          "question_id": "Q1",
+          "diagram_present": false,
+          "diagram_description": "",
+          "source": "student_answer",
+          "type": "definition"
+        }
+      }
+    ]
+  },
+  "Q2": {
+    "original_answer": "a-2. backpropagation is a supervised learning algorithm used to train artificial neural networks. it works by calculating the error at the output and propagating it backwards through the network using this error, the algorithm adjusts weights and biases to minimise the loss function. it relies on the chain rule of differentiation for efficient computation of gradients. algorithm - step 1: initialise parameters : initialise weights and biases with small random values. step 2: forward propagation : pass input through the network layer by layer. compute: z = w.x + b and apply activation function, to predict output ˆy. step 3: compute loss : calculate error using a loss function. l = 1/2 (y - ˆy)² step 4: backward propagation : compute gradient of loss w.r.t output. use chain rule to propagate error backward through each layer. calculate gradients -",
+    "chunks": [
+      {
+        "chunk_id": "Q2_chunk_1",
+        "chunk": "a-2. backpropagation is a supervised learning algorithm used to train artificial neural networks. it works by calculating the error at the output and propagating it backwards through the network using this error, the algorithm adjusts weights and biases to minimise the loss function. it relies on the chain rule of differentiation for efficient computation of gradients. algorithm - step 1: initialise parameters : initialise weights and biases with small random values. step 2: forward propagation : pass input through the network layer by layer. compute: z = w.x + b and apply activation function, to predict output ˆy. step 3: compute loss : calculate error using a loss function.",
+        "metadata": {
+          "question_id": "Q2",
+          "diagram_present": false,
+          "diagram_description": "",
+          "source": "student_answer",
+          "type": "mixed"
+        }
+      },
+      {
+        "chunk_id": "Q2_chunk_2",
+        "chunk": "l = 1/2 (y - ˆy)² step 4: backward propagation : compute gradient of loss w.r.t output. use chain rule to propagate error backward through each layer. calculate gradients -",
+        "metadata": {
+          "question_id": "Q2",
+          "diagram_present": false,
+          "diagram_description": "",
+          "source": "student_answer",
+          "type": "mixed"
+        }
+      }
+    ]
+  },
+  "Q3": {
+    "original_answer": "a-3 a convolutional neural network is a type of deep learning model specifically designed for processing grid like data - such as: images. it automatically learns spatial features like - edges, textures, and patterns using convolution operations. a typical cnn consists of: input layer, convolution layer, activation function, pooling layer or subsampling, fully connected layer and the output layer. working of cnn: a) input image - the input image is provided to",
+    "chunks": [
+      {
+        "chunk_id": "Q3_chunk_1",
+        "chunk": "a-3 a convolutional neural network is a type of deep learning model specifically designed for processing grid like data - such as: images. it automatically learns spatial features like - edges, textures, and patterns using convolution operations. a typical cnn consists of: input layer, convolution layer, activation function, pooling layer or subsampling, fully connected layer and the output layer. working of cnn: a) input image - the input image is provided to",
+        "metadata": {
+          "question_id": "Q3",
+          "diagram_present": false,
+          "diagram_description": "",
+          "source": "student_answer",
+          "type": "mixed"
+        }
+      }
+    ]
+  },
+  "Q4": {
+    "original_answer": "",
+    "chunks": []
+  },
+  "Q5": {
+    "original_answer": "a-4 rnn is a type of neural network designed to handle sequential data such as text, time series or speech. it has the ability to retain information from previous inputs using a hidden state. architecture of rnn: input layer → hidden layer → output layer input layer - takes sequential data as input and each input is processed one step at a time. hidden layer - it is the key feature of rnn: h_t. it stores information of previous time steps. the hidden state is updated using: h_t = f(w_h h_{t-1} + w_x x_t + b) this created a loop allowing past information to influence current output. the same weights are shared across all time steps. output layer - produces output at each time step or at: the final step. output is calculated as: y_t = g(w_h h_t + b)",
+    "chunks": [
+      {
+        "chunk_id": "Q5_chunk_1",
+        "chunk": "a-4 rnn is a type of neural network designed to handle sequential data such as text, time series or speech. it has the ability to retain information from previous inputs using a hidden state. architecture of rnn: input layer → hidden layer → output layer input layer - takes sequential data as input and each input is processed one step at a time. hidden layer - it is the key feature of rnn: h_t. it stores information of previous time steps. the hidden state is updated using: h_t = f(w_h h_{t-1} + w_x x_t + b) this created a loop allowing past information to influence current output. the same weights are shared across all time steps.",
+        "metadata": {
+          "question_id": "Q5",
+          "diagram_present": false,
+          "diagram_description": "",
+          "source": "student_answer",
+          "type": "mixed"
+        }
+      },
+      {
+        "chunk_id": "Q5_chunk_2",
+        "chunk": "output layer - produces output at each time step or at: the final step. output is calculated as: y_t = g(w_h h_t + b)",
+        "metadata": {
+          "question_id": "Q5",
+          "diagram_present": false,
+          "diagram_description": "",
+          "source": "student_answer",
+          "type": "mixed"
+        }
+      }
+    ]
+  },
+  "Q6": {
+    "original_answer": "a-5 lstm is a special type of rnn designed to overcome vanishing gradient problem. it is capable of learning long term dependencies using a memory cell & a gating mechanism. lstm is built using :- start with sequential input data replace standard rnns with lstm cells stack one or more lstm layers connect to fully connected output layer internal components: - cell state - acts as long term memory of network and carry important information across time steps",
+    "chunks": [
+      {
+        "chunk_id": "Q6_chunk_1",
+        "chunk": "a-5 lstm is a special type of rnn designed to overcome vanishing gradient problem. it is capable of learning long term dependencies using a memory cell & a gating mechanism. lstm is built using :- start with sequential input data replace standard rnns with lstm cells stack one or more lstm layers connect to fully connected output layer internal components: - cell state - acts as long term memory of network and carry important information across time steps",
+        "metadata": {
+          "question_id": "Q6",
+          "diagram_present": false,
+          "diagram_description": "",
+          "source": "student_answer",
+          "type": "mixed"
+        }
+      }
+    ]
+  },
+  "Q7": {
+    "original_answer": "forget gate - decides what information to discard from previous cell state . input gate - decides what new information to store in cell state . candidate cell state - creates new candidate values to be added to memory. output gate - determines the output based on cell state . c_t-1 → [x] → [+] → c_t ↓ ↓ ↓ i_t ^c_t o_t ↓ ↓ ↓ [σ] [tanh] [σ] ↓ ↓ ↓ h_t-1 → [x] → h_t ↓ x_t forget gate input gate output gate lstm unit diagram",
+    "chunks": [
+      {
+        "chunk_id": "Q7_chunk_1",
+        "chunk": "forget gate - decides what information to discard from previous cell state . input gate - decides what new information to store in cell state . candidate cell state - creates new candidate values to be added to memory. output gate - determines the output based on cell state . c_t-1 → [x] → [+] → c_t ↓ ↓ ↓ i_t ^c_t o_t ↓ ↓ ↓ [σ] [tanh] [σ] ↓ ↓ ↓ h_t-1 → [x] → h_t ↓ x_t forget gate input gate output gate lstm unit diagram",
+        "metadata": {
+          "question_id": "Q7",
+          "diagram_present": false,
+          "diagram_description": "",
+          "source": "student_answer",
+          "type": "formula"
+        }
+      }
+    ]
+  },
+  "Q8": {
+    "original_answer": "a-6 gan is a deep learning model consisting of 2 networks: generator and discriminator that compete with each other. the goal is to generate realistic data samples that are indistinguishable from real data. step1: input noise generation - random noise vector is generated and given as input to generator which processes the noise and produces fake data samples. objective is to generate data that closely resembles real data. step2: inputs to discriminator - both the real and === page 9 === fake generated data are fed to discriminator. the discriminator evaluates inputs and classifies them as real or fake. it is trained correctly distinguish between real and generated data. step 3: feedback to generator - the generator receives feedback based on how well it fooled the discriminator. using this feedback, it updates it parameters to generate more realistic data. step 4: adversarial training process - both the networks are trained simultaneously in a competitive manner. the generator improves its ability to fool discriminator while discriminator becomes better at detection. step 5: convergence - training continues until generator produces highly realistic data that the discriminator can no longer easily distinguish from real data.",
+    "chunks": [
+      {
+        "chunk_id": "Q8_chunk_1",
+        "chunk": "a-6 gan is a deep learning model consisting of 2 networks: generator and discriminator that compete with each other. the goal is to generate realistic data samples that are indistinguishable from real data. step1: input noise generation - random noise vector is generated and given as input to generator which processes the noise and produces fake data samples. objective is to generate data that closely resembles real data. step2: inputs to discriminator - both the real and === page 9 === fake generated data are fed to discriminator. the discriminator evaluates inputs and classifies them as real or fake. it is trained correctly distinguish between real and generated data.",
+        "metadata": {
+          "question_id": "Q8",
+          "diagram_present": true,
+          "diagram_description": "Type: flowchart\n\nKey Labels:\nRandom Noise\nGenerator G\nGenerated fake samples\nTraining Data\nReal samples\nDiscriminator D\nGenerator Loss\nDiscriminator Loss\nbackpropagation\nbackpropagation\n\nConnections Between Elements:\n- A downward arrow connects \"Random Noise\" to \"Generator G\".\n- A downward arrow connects \"Generator G\" to \"Generated fake samples\".\n- A downward arrow connects \"Training Data\" to \"Real samples\".\n- A downward arrow connects \"Real samples\" to \"Discriminator D\".\n- A downward arrow connects \"Generated fake samples\" to \"Discriminator D\".\n- A downward arrow connects \"Discriminator D\" to \"Generator Loss\".\n- A downward arrow connects \"Discriminator D\" to \"Discriminator Loss\".\n- A curved arrow labeled \"backpropagation\" connects \"Discriminator Loss\" to \"Generator G\".\n- A curved arrow labeled \"backpropagation\" connects \"Discriminator Loss\" to \"Discriminator D\".\n\nDirectionality:\n- All arrows are directed downward or toward the loss nodes, indicating data flow and feedback.\n- The \"backpropagation\" arrows indicate feedback signals from loss to the respective networks.\n\nRelative Positioning:\n- The diagram is arranged in a top-down flow, with \"Random Noise\" and \"Training Data\" at the top.\n- \"Generator G\" and \"Real samples\" are horizontally aligned.\n- \"Discriminator D\" is centered below them.\n- \"Generator Loss\" and \"Discriminator Loss\" are at the bottom, with feedback arrows pointing upward.\n\nNeatness / Presentation:\n- The diagram is clear and legible, with distinct boxes and arrows.\n- Labels are clearly written and positioned.\n- The layout is organized and follows a logical flow.",
+          "source": "student_answer",
+          "type": "mixed"
+        }
+      },
+      {
+        "chunk_id": "Q8_chunk_2",
+        "chunk": "step 3: feedback to generator - the generator receives feedback based on how well it fooled the discriminator. using this feedback, it updates it parameters to generate more realistic data. step 4: adversarial training process - both the networks are trained simultaneously in a competitive manner. the generator improves its ability to fool discriminator while discriminator becomes better at detection. step 5: convergence - training continues until generator produces highly realistic data that the discriminator can no longer easily distinguish from real data.",
+        "metadata": {
+          "question_id": "Q8",
+          "diagram_present": true,
+          "diagram_description": "Type: flowchart\n\nKey Labels:\nRandom Noise\nGenerator G\nGenerated fake samples\nTraining Data\nReal samples\nDiscriminator D\nGenerator Loss\nDiscriminator Loss\nbackpropagation\nbackpropagation\n\nConnections Between Elements:\n- A downward arrow connects \"Random Noise\" to \"Generator G\".\n- A downward arrow connects \"Generator G\" to \"Generated fake samples\".\n- A downward arrow connects \"Training Data\" to \"Real samples\".\n- A downward arrow connects \"Real samples\" to \"Discriminator D\".\n- A downward arrow connects \"Generated fake samples\" to \"Discriminator D\".\n- A downward arrow connects \"Discriminator D\" to \"Generator Loss\".\n- A downward arrow connects \"Discriminator D\" to \"Discriminator Loss\".\n- A curved arrow labeled \"backpropagation\" connects \"Discriminator Loss\" to \"Generator G\".\n- A curved arrow labeled \"backpropagation\" connects \"Discriminator Loss\" to \"Discriminator D\".\n\nDirectionality:\n- All arrows are directed downward or toward the loss nodes, indicating data flow and feedback.\n- The \"backpropagation\" arrows indicate feedback signals from loss to the respective networks.\n\nRelative Positioning:\n- The diagram is arranged in a top-down flow, with \"Random Noise\" and \"Training Data\" at the top.\n- \"Generator G\" and \"Real samples\" are horizontally aligned.\n- \"Discriminator D\" is centered below them.\n- \"Generator Loss\" and \"Discriminator Loss\" are at the bottom, with feedback arrows pointing upward.\n\nNeatness / Presentation:\n- The diagram is clear and legible, with distinct boxes and arrows.\n- Labels are clearly written and positioned.\n- The layout is organized and follows a logical flow.",
+          "source": "student_answer",
+          "type": "mixed"
+        }
+      }
+    ]
+  }
+}

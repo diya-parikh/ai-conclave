@@ -121,7 +121,7 @@ function loadPageData(pageName) {
             // Upload page is initialized by upload.js
             break;
         case 'knowledge':
-            // Knowledge page is static until submission
+            if (typeof loadKnowledgeDocuments === 'function') loadKnowledgeDocuments();
             break;
     }
 }
