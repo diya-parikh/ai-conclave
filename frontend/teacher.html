@@ -3,284 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Teacher Dashboard — Evaluate AI: Upload answer sheets, view student scores, and manage evaluations">
-    <title>Teacher Dashboard — Evaluate AI</title>
-    <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/layout.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/pages.css">
+    <title>Teacher Dashboard - Evaluate AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: linear-gradient(135deg, var(--surface), rgba(99,102,241,0.1)); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.5rem; }
+        .stat-card h3 { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .stat-card .value { font-size: 2.5rem; font-weight: 700; color: white; font-family: 'Outfit'; }
+        
+        .upload-section { margin-bottom: 2rem; }
+        .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index: 1000; justify-content:center; align-items:center; }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--surface); backdrop-filter: blur(20px); border: 1px solid var(--border); padding: 2rem; border-radius: var(--radius-lg); width: 90%; max-width: 500px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .close-btn { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+    </style>
 </head>
-<body>
-    <!-- Toast Container -->
-    <div id="toast-container" class="toast-container"></div>
-
-    <div class="app-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-logo">
-                <div class="logo-icon">📝</div>
-                <span class="logo-text">Evaluate AI</span>
+<body class="dashboard-page">
+    <nav class="navbar">
+        <h1 class="logo">Evaluate<span>AI</span></h1>
+        <div class="nav-user">
+            <div class="user-info">
+                <div class="user-name" id="display-name">Loading...</div>
+                <div class="user-role" id="display-role">Teacher</div>
             </div>
-            <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <div class="nav-section-title">Main</div>
-                    <a href="#dashboard" class="nav-item active" data-page="dashboard" id="nav-dashboard">
-                        <span class="nav-icon">📊</span>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="#upload" class="nav-item" data-page="upload" id="nav-upload">
-                        <span class="nav-icon">📤</span>
-                        <span>Upload Sheets</span>
-                    </a>
-                    <a href="#results" class="nav-item" data-page="results" id="nav-results">
-                        <span class="nav-icon">📋</span>
-                        <span>Student Results</span>
-                    </a>
-                </div>
-                <div class="nav-section">
-                    <div class="nav-section-title">Knowledge Base</div>
-                    <a href="#knowledge" class="nav-item" data-page="knowledge" id="nav-knowledge">
-                        <span class="nav-icon">📚</span>
-                        <span>Model Answers</span>
-                    </a>
-                </div>
-            </nav>
-            <div class="sidebar-footer">
-                <div class="sidebar-user" id="sidebar-user">
-                    <div class="user-avatar" id="user-avatar">T</div>
-                    <div class="user-info">
-                        <div class="user-name" id="user-name">Teacher</div>
-                        <div class="user-role">Teacher</div>
-                    </div>
-                    <button class="btn btn-ghost btn-icon" id="logout-btn" title="Logout">🚪</button>
-                </div>
-            </div>
-        </aside>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Mobile menu button -->
-            <button class="btn btn-ghost btn-icon mobile-menu-btn" id="mobile-menu-btn">☰</button>
+    <main class="dashboard-container">
+        <!-- Dashboard Stats -->
+        <div class="stats-grid" id="stats-container">
+            <div class="stat-card"><h3>Total Evaluations</h3><div class="value" id="stat-total">-</div></div>
+            <div class="stat-card"><h3>Total Students</h3><div class="value" id="stat-students">-</div></div>
+            <div class="stat-card"><h3>Class Average</h3><div class="value" id="stat-avg">-</div></div>
+        </div>
 
-            <!-- ===== Dashboard Page ===== -->
-            <div id="page-dashboard" class="page-section">
-                <div class="page-header">
-                    <div>
-                        <h1>Dashboard</h1>
-                        <p>Overview of evaluations and student performance</p>
-                    </div>
-                </div>
-
-                <!-- Stats Grid -->
-                <div class="grid grid-4" id="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">📄</div>
-                        <div class="stat-value" id="stat-evaluations">0</div>
-                        <div class="stat-label">Total Evaluations</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">👨‍🎓</div>
-                        <div class="stat-value" id="stat-students">0</div>
-                        <div class="stat-label">Unique Students</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📈</div>
-                        <div class="stat-value" id="stat-avg-score">0%</div>
-                        <div class="stat-label">Average Score</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📚</div>
-                        <div class="stat-value" id="stat-subjects">0</div>
-                        <div class="stat-label">Subjects</div>
-                    </div>
-                </div>
-
-                <!-- Grade Distribution & Recent Evaluations -->
-                <div class="grid grid-2" style="margin-top: var(--space-8);">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="card-title">Grade Distribution</h4>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="grade-chart" width="400" height="250"></canvas>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="card-title">Recent Evaluations</h4>
-                        </div>
-                        <div class="card-body" id="recent-evaluations">
-                            <div class="empty-state">
-                                <div class="empty-icon">📋</div>
-                                <h3>No evaluations yet</h3>
-                                <p>Upload and evaluate answer sheets to see results here.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ===== Upload Page ===== -->
-            <div id="page-upload" class="page-section" style="display: none;">
-                <div class="page-header">
-                    <div>
-                        <h1>Upload Answer Sheet</h1>
-                        <p>Upload a student's handwritten answer sheet for evaluation</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-2">
-                    <div class="card">
-                        <h4 class="card-title" style="margin-bottom: var(--space-4);">Answer Sheet</h4>
-                        <div class="upload-zone" id="upload-zone">
-                            <div class="upload-icon">📤</div>
-                            <h3>Drop answer sheet here</h3>
-                            <p>or click to browse — PDF, PNG, JPG (max 50MB)</p>
-                            <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.tiff">
-                        </div>
-                        <div id="file-preview" style="display: none;"></div>
-                    </div>
-
-                    <div class="card">
-                        <h4 class="card-title" style="margin-bottom: var(--space-4);">Student Details</h4>
-                        <form id="upload-form">
-                            <div class="form-group">
-                                <label class="form-label" for="student-name">Student Name</label>
-                                <input type="text" id="student-name" class="form-input" placeholder="Enter student name" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="student-email-input">Student Email</label>
-                                <input type="email" id="student-email-input" class="form-input" placeholder="student@example.com" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="subject-input">Subject</label>
-                                <input type="text" id="subject-input" class="form-input" placeholder="e.g., Computer Science" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="exam-name-input">Exam Name (optional)</label>
-                                <input type="text" id="exam-name-input" class="form-input" placeholder="e.g., Mid-term 2026">
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;" id="upload-submit-btn" disabled>
-                                📤 Upload & Process
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Processing Progress -->
-                <div id="processing-section" class="card" style="margin-top: var(--space-6); display: none;">
-                    <h4 class="card-title" style="margin-bottom: var(--space-4);">Processing Pipeline</h4>
-                    <div id="pipeline-steps"></div>
-                </div>
-            </div>
-
-            <!-- ===== Results Page ===== -->
-            <div id="page-results" class="page-section" style="display: none;">
-                <div class="page-header">
-                    <div>
-                        <h1>Student Results</h1>
-                        <p>View all evaluated answer sheets and student scores</p>
-                    </div>
-                </div>
-
+        <div class="upload-section">
+            <h2 class="card-title">Document Management</h2>
+            <div class="upload-grid">
+                <!-- Evaluation Upload -->
                 <div class="card">
-                    <table class="data-table" id="results-table">
-                        <thead>
-                            <tr>
-                                <th>Student</th>
-                                <th>Subject</th>
-                                <th>Score</th>
-                                <th>Percentage</th>
-                                <th>Grade</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="results-body">
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
-                    <div id="results-empty" class="empty-state" style="display: none;">
-                        <div class="empty-icon">📋</div>
-                        <h3>No results yet</h3>
-                        <p>Upload and evaluate answer sheets to see results here.</p>
+                    <h3 style="margin-bottom: 1rem;">Upload Answer Sheet</h3>
+                    <div class="file-drop-area" onclick="document.getElementById('answerSheetInput').click()">
+                        <span class="file-icon">📄</span>
+                        <p>Click to upload Student Answer Sheet<br><small style="color:var(--text-muted)">PDF, PNG, JPG</small></p>
                     </div>
+                    <form id="upload-answer-form" style="display:none; margin-top: 1rem;">
+                        <input type="file" id="answerSheetInput" accept=".pdf,.png,.jpg,.jpeg" onchange="showAnswerForm()">
+                        <div class="input-group"><input type="text" id="as-name" placeholder="Student Name" required></div>
+                        <div class="input-group"><input type="email" id="as-email" placeholder="Student Email" required></div>
+                        <div class="input-group"><input type="text" id="as-subject" placeholder="Subject" required></div>
+                        <button type="submit" class="action-btn" style="width:100%" id="btn-upload-as">Upload & Process</button>
+                    </form>
+                </div>
+                
+                <!-- Knowledge Base Upload -->
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem;">Upload Reference Material</h3>
+                    <div class="file-drop-area" onclick="document.getElementById('kbInput').click()">
+                        <span class="file-icon">📚</span>
+                        <p>Click to upload Model Answers or Notes <span class="optional-tag">For RAG</span></p>
+                    </div>
+                    <form id="upload-kb-form" style="display:none; margin-top: 1rem;">
+                        <input type="file" id="kbInput" accept=".pdf,.docx,.txt" onchange="showKbForm()">
+                        <div class="input-group"><input type="text" id="kb-subject" placeholder="Subject" required></div>
+                        <div class="input-group">
+                            <select id="kb-type" style="width:100%; padding:0.85rem; background:rgba(0,0,0,0.2); color:white; border:1px solid var(--border); border-radius:var(--radius-md);">
+                                <option value="model_answer">Model Answer</option>
+                                <option value="textbook">Textbook / Chapter</option>
+                                <option value="notes">Class Notes</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="action-btn" style="width:100%" id="btn-upload-kb">Ingest to Knowledge Base</button>
+                    </form>
                 </div>
             </div>
+        </div>
 
-            <!-- ===== Knowledge Base Page ===== -->
-            <div id="page-knowledge" class="page-section" style="display: none;">
-                <div class="page-header">
-                    <div>
-                        <h1>Knowledge Base</h1>
-                        <p>Upload model answers and reference materials for RAG retrieval</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-2">
-                    <div class="card">
-                        <h4 class="card-title" style="margin-bottom: var(--space-4);">Upload Reference Document</h4>
-                        <div class="upload-zone" id="knowledge-upload-zone">
-                            <div class="upload-icon">📚</div>
-                            <h3>Drop reference document here</h3>
-                            <p>PDF, DOCX, or TXT file</p>
-                            <input type="file" id="knowledge-file-input" accept=".pdf,.docx,.txt">
-                        </div>
-                        <form id="knowledge-form" style="margin-top: var(--space-4);">
-                            <div class="form-group">
-                                <label class="form-label" for="knowledge-subject">Subject</label>
-                                <input type="text" id="knowledge-subject" class="form-input" placeholder="e.g., Computer Science" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="knowledge-type">Document Type</label>
-                                <select id="knowledge-type" class="form-input form-select">
-                                    <option value="model_answer">Model Answer</option>
-                                    <option value="textbook">Textbook</option>
-                                    <option value="notes">Notes</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;" id="knowledge-submit-btn" disabled>
-                                📚 Ingest Document
-                            </button>
-                        </form>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="card-title">Ingested Documents</h4>
-                        </div>
-                        <div id="knowledge-list">
-                            <div class="empty-state">
-                                <div class="empty-icon">📚</div>
-                                <h3>No documents ingested</h3>
-                                <p>Upload model answers or reference materials to build the knowledge base.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="card">
+            <h2 class="card-title">Recent Evaluations</h2>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Student</th>
+                            <th>Subject</th>
+                            <th>Score</th>
+                            <th>Grade</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eval-table-body">
+                        <!-- Populated by JS -->
+                        <tr><td colspan="7" style="text-align:center">Loading...</td></tr>
+                    </tbody>
+                </table>
             </div>
+        </div>
+    </main>
 
-            <!-- ===== Evaluation Detail Modal ===== -->
-            <div class="modal-backdrop" id="eval-modal">
-                <div class="modal" style="max-width: 700px;">
-                    <div class="flex justify-between items-center" style="margin-bottom: var(--space-6);">
-                        <h3 id="modal-title">Evaluation Details</h3>
-                        <button class="btn btn-ghost btn-icon" id="close-modal">✕</button>
-                    </div>
-                    <div id="modal-content">
-                        <!-- Populated dynamically -->
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/upload.js"></script>
-    <script src="js/dashboard.js"></script>
-    <script src="js/results.js"></script>
+    <script src="js/teacher.js"></script>
 </body>
 </html>

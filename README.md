@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Evaluate AI — Automated Evaluation of Handwritten Student Answer Sheets
 
 A production-grade system that accepts scanned handwritten answer sheets, extracts text using OCR, processes it through NLP and RAG pipelines, evaluates answers using LLMs, and presents results through a premium dashboard.
@@ -162,3 +163,6 @@ Upload → OCR (QWEN V3) → NLP (spaCy/BERT) → RAG (pgvector) → LLM (Ollama
 ## 📝 License
 
 MIT License
+=======
+# ai-conclave
+>>>>>>> 74b75cb52712aa2d5306a9a0f484011352a21a75

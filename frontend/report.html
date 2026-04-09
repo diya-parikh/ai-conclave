@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detailed Evaluation Report - Evaluate AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .report-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .total-score-card {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+            margin-bottom: 2rem;
+        }
+
+        .total-score-card h2 { font-size: 4rem; margin: 0; font-family: 'Outfit'; line-height: 1; }
+        .total-score-card span { font-size: 1.25rem; opacity: 0.8; }
+        
+        .question-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .q-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .q-title { font-size: 1.2rem; font-weight: 600; color: #fff; }
+        .q-marks { font-size: 1.2rem; font-family: 'Outfit'; color: var(--success); font-weight: 700; background: rgba(16,185,129,0.1); padding: 0.2rem 0.8rem; border-radius: 999px; }
+
+        .answer-box {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            font-family: monospace;
+            color: #d1d5db;
+            margin-bottom: 1.5rem;
+            white-space: pre-wrap;
+        }
+
+        .feedback-box {
+            background: rgba(99,102,241,0.05);
+            border: 1px solid rgba(99,102,241,0.2);
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .feedback-label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .contradiction-alert {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 3px solid var(--error);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body class="dashboard-page">
+    <nav class="navbar">
+        <h1 class="logo">Evaluate<span>AI</span></h1>
+        <div class="nav-user">
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <main class="dashboard-container">
+        <a href="#" onclick="history.back()" class="back-btn">← Back to Dashboard</a>
+        
+        <div id="report-container">
+            <h2 style="text-align:center; color: var(--text-muted);">Loading Report...</h2>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/report.js"></script>
+</body>
+</html>

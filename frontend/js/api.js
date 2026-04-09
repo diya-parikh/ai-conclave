@@ -1,134 +1,78 @@
-/**
- * API Client
- *
- * Fetch-based HTTP client for all backend API calls.
- * Automatically attaches JWT token and handles errors.
- */
+// API Configuration and Utility Functions
+const API_BASE = 'http://localhost:8000/api/v1';
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
-
+// Setup Axios-like fetch wrapper
 const api = {
-    /**
-     * Make an authenticated API request.
-     * @param {string} endpoint - API endpoint path (e.g., '/auth/login')
-     * @param {object} options - Fetch options
-     * @returns {Promise<object>} Parsed JSON response
-     */
     async request(endpoint, options = {}) {
-        const url = `${API_BASE_URL}${endpoint}`;
-        const token = Auth.getToken();
-
+        const token = localStorage.getItem('token');
         const headers = {
-            ...options.headers,
+            'Accept': 'application/json',
+            ...(options.headers || {})
         };
 
-        // Add auth header if token exists
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
-        // Add Content-Type for JSON requests (not FormData)
-        if (options.body && !(options.body instanceof FormData)) {
+        if (!(options.body instanceof FormData)) {
             headers['Content-Type'] = 'application/json';
+            if (options.body && typeof options.body === 'object') {
+                options.body = JSON.stringify(options.body);
+            }
         }
 
         try {
-            const response = await fetch(url, {
+            const response = await fetch(`${API_BASE}${endpoint}`, {
                 ...options,
-                headers,
+                headers
             });
 
-            // Handle auth errors
-            if (response.status === 401) {
-                Auth.clearAuth();
-                window.location.href = 'index.html';
-                throw new Error('Session expired. Please login again.');
-            }
-
-            // Parse response
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.detail || `Request failed (${response.status})`);
+                throw new Error(data.detail || data.message || 'API Request Failed');
             }
 
             return data;
         } catch (error) {
-            if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                throw new Error('Unable to connect to server. Is the backend running?');
-            }
+            console.error('API Error:', error);
             throw error;
         }
     },
 
-    // ---- Auth ----
-    async register(name, email, password, role) {
-        return this.request('/auth/register', {
-            method: 'POST',
-            body: JSON.stringify({ name, email, password, role }),
-        });
-    },
-
-    async login(email, password) {
-        return this.request('/auth/login', {
-            method: 'POST',
-            body: JSON.stringify({ email, password }),
-        });
-    },
-
-    // ---- Upload ----
-    async uploadDocument(formData) {
-        return this.request('/upload/', {
-            method: 'POST',
-            body: formData,
-        });
-    },
-
-    // ---- Processing ----
-    async processDocument(documentId) {
-        return this.request('/process/', {
-            method: 'POST',
-            body: JSON.stringify({ document_id: documentId }),
-        });
-    },
-
-    // ---- Evaluation ----
-    async evaluateDocument(documentId, maxMarks = 10) {
-        return this.request('/evaluate/', {
-            method: 'POST',
-            body: JSON.stringify({
-                document_id: documentId,
-                max_marks_per_question: maxMarks,
-            }),
-        });
-    },
-
-    // ---- Results ----
-    async getResults() {
-        return this.request('/results/');
-    },
-
-    async getMyResults() {
-        return this.request('/results/my-results');
-    },
-
-    async getEvaluationDetail(evaluationId) {
-        return this.request(`/results/${evaluationId}`);
-    },
-
-    async getDashboardStats() {
-        return this.request('/results/dashboard');
-    },
-
-    // ---- Knowledge Base ----
-    async ingestKnowledge(formData) {
-        return this.request('/knowledge/ingest', {
-            method: 'POST',
-            body: formData,
-        });
-    },
-
-    async getKnowledgeDocuments() {
-        return this.request('/knowledge/');
-    },
+    get(endpoint) { return this.request(endpoint, { method: 'GET' }); },
+    post(endpoint, body) { return this.request(endpoint, { method: 'POST', body }); },
+    upload(endpoint, formData) { return this.request(endpoint, { method: 'POST', body: formData }); }
 };
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/';
+}
+
+// Redirect if unauthenticated or wrong role
+function checkAuth(requiredRole = null) {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+
+    if (!token || !userStr) {
+        window.location.href = '/';
+        return null;
+    }
+
+    const user = JSON.parse(userStr);
+    
+    if (requiredRole && user.role !== requiredRole) {
+        window.location.href = user.role === 'teacher' ? 'teacher.html' : 'student.html';
+        return null;
+    }
+
+    // Update UI elements if present
+    const nameEl = document.getElementById('display-name');
+    const roleEl = document.getElementById('display-role');
+    if(nameEl) nameEl.textContent = user.name;
+    if(roleEl) roleEl.textContent = user.role;
+
+    return user;
+}

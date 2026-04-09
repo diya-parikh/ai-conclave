@@ -3,124 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Student Dashboard — Evaluate AI: View your evaluation results and detailed feedback">
-    <title>My Results — Evaluate AI</title>
-    <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/layout.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/pages.css">
+    <title>Student Dashboard - Evaluate AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .welcome-banner {
+            background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(236,72,153,0.1));
+            border: 1px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .welcome-banner h2 { font-size: 2rem; font-family: 'Outfit'; margin-bottom: 0.5rem; }
+        .welcome-banner p { color: var(--text-muted); }
+
+        .score-pill {
+            background: var(--surface);
+            padding: 1rem 2rem;
+            border-radius: 999px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+            font-family: 'Outfit';
+        }
+    </style>
 </head>
-<body>
-    <!-- Toast Container -->
-    <div id="toast-container" class="toast-container"></div>
-
-    <div class="app-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-logo">
-                <div class="logo-icon">📝</div>
-                <span class="logo-text">Evaluate AI</span>
+<body class="dashboard-page">
+    <nav class="navbar">
+        <h1 class="logo">Evaluate<span>AI</span></h1>
+        <div class="nav-user">
+            <div class="user-info">
+                <div class="user-name" id="display-name">Loading...</div>
+                <div class="user-role" id="display-role">Student</div>
             </div>
-            <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <div class="nav-section-title">My Account</div>
-                    <a href="#my-results" class="nav-item active" data-page="my-results" id="nav-my-results">
-                        <span class="nav-icon">📋</span>
-                        <span>My Results</span>
-                    </a>
-                </div>
-            </nav>
-            <div class="sidebar-footer">
-                <div class="sidebar-user" id="sidebar-user">
-                    <div class="user-avatar" id="user-avatar">S</div>
-                    <div class="user-info">
-                        <div class="user-name" id="user-name">Student</div>
-                        <div class="user-role">Student</div>
-                    </div>
-                    <button class="btn btn-ghost btn-icon" id="logout-btn" title="Logout">🚪</button>
-                </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <main class="dashboard-container">
+        
+        <div class="welcome-banner">
+            <div>
+                <h2>Welcome back!</h2>
+                <p>Check out your latest AI-evaluated answer sheets below.</p>
             </div>
-        </aside>
+        </div>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <button class="btn btn-ghost btn-icon mobile-menu-btn" id="mobile-menu-btn">☰</button>
-
-            <!-- ===== My Results Page ===== -->
-            <div id="page-my-results" class="page-section">
-                <div class="page-header">
-                    <div>
-                        <h1>My Results</h1>
-                        <p>View your evaluation scores and detailed feedback</p>
-                    </div>
-                </div>
-
-                <!-- Results List -->
-                <div id="student-results-list">
-                    <div class="empty-state" id="student-empty-state">
-                        <div class="empty-icon">📋</div>
-                        <h3>No results available</h3>
-                        <p>Your evaluation results will appear here once your teacher has graded your answer sheets.</p>
-                    </div>
-                </div>
-
-                <!-- Result Detail Section (shown when a result is clicked) -->
-                <div id="result-detail" style="display: none;">
-                    <button class="btn btn-ghost" id="back-to-list" style="margin-bottom: var(--space-4);">
-                        ← Back to Results
-                    </button>
-
-                    <!-- Score Summary -->
-                    <div class="card" style="margin-bottom: var(--space-6);">
-                        <div class="flex justify-between items-center flex-wrap gap-4">
-                            <div>
-                                <h3 id="detail-subject" style="margin-bottom: var(--space-1);">Subject</h3>
-                                <p id="detail-date" style="font-size: var(--font-size-sm);">Date</p>
-                            </div>
-                            <div class="flex items-center gap-6">
-                                <div style="text-align: center;">
-                                    <div class="score-circle">
-                                        <div class="score-value" id="detail-percentage">0%</div>
-                                        <div class="score-label">Score</div>
-                                    </div>
-                                </div>
-                                <div class="grade-badge" id="detail-grade-badge">
-                                    <span id="detail-grade">-</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="result-summary" style="margin-top: var(--space-6);">
-                            <div class="stat-card">
-                                <div class="stat-value" id="detail-total-marks">0</div>
-                                <div class="stat-label">Marks Obtained</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value" id="detail-max-marks">0</div>
-                                <div class="stat-label">Total Marks</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value" id="detail-questions-count">0</div>
-                                <div class="stat-label">Questions Evaluated</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Per-Question Feedback -->
-                    <div class="section">
-                        <h3 class="section-title">📝 Question-wise Feedback</h3>
-                        <div id="questions-feedback">
-                            <!-- Dynamically populated -->
-                        </div>
-                    </div>
-                </div>
+        <div class="card">
+            <h2 class="card-title">My Evaluation Results</h2>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Subject</th>
+                            <th>Exam Name</th>
+                            <th>Score</th>
+                            <th>Grade</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="student-eval-table">
+                        <tr><td colspan="7" style="text-align:center">Loading results...</td></tr>
+                    </tbody>
+                </table>
             </div>
-        </main>
-    </div>
+        </div>
 
-    <script src="js/utils.js"></script>
+    </main>
+
     <script src="js/api.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/results.js"></script>
+    <script src="js/student.js"></script>
 </body>
 </html>

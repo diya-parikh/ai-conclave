@@ -97,7 +97,7 @@ no markdown fences, no preamble.
 
 
 class TextExtractor:
-    LM_STUDIO_URL: str = "http://192.168.28.1:1234/v1/chat/completions"
+    LM_STUDIO_URL: str = "http://127.0.0.1:1234/v1/chat/completions"
     MODEL_NAME: str    = "qwen/qwen3-vl-4b"
     MAX_TOKENS: int    = 4096          # diagram evaluation descriptions can be verbose
     TEMPERATURE: float = 0
