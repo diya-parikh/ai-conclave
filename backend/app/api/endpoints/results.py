@@ -41,6 +41,7 @@ async def list_evaluations(
     """
     result = await db.execute(
         select(Evaluation)
+        .options(selectinload(Evaluation.document))
         .join(Document)
         .where(Document.teacher_id == teacher.id)
         .order_by(Evaluation.created_at.desc())
@@ -85,6 +86,7 @@ async def get_my_results(
 
     result = await db.execute(
         select(Evaluation)
+        .options(selectinload(Evaluation.document))
         .join(Document)
         .where(Document.student_email == current_user.email)
         .order_by(Evaluation.created_at.desc())
@@ -165,6 +167,7 @@ async def get_dashboard_stats(
     # Recent evaluations
     recent_result = await db.execute(
         select(Evaluation)
+        .options(selectinload(Evaluation.document))
         .join(Document)
         .where(Document.teacher_id == teacher.id)
         .order_by(Evaluation.created_at.desc())

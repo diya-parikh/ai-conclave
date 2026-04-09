@@ -44,7 +44,7 @@ async def init_db():
     """
     async with engine.begin() as conn:
         # Enable pgvector extension
-        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
+        # await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
         
         # Import all models to ensure they are registered with Base
         import app.models  # noqa: F401

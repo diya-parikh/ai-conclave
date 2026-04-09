@@ -62,7 +62,7 @@ function checkAuth(requiredRole = null) {
     }
 
     const user = JSON.parse(userStr);
-    
+
     if (requiredRole && user.role !== requiredRole) {
         window.location.href = user.role === 'teacher' ? 'teacher.html' : 'student.html';
         return null;
@@ -71,8 +71,8 @@ function checkAuth(requiredRole = null) {
     // Update UI elements if present
     const nameEl = document.getElementById('display-name');
     const roleEl = document.getElementById('display-role');
-    if(nameEl) nameEl.textContent = user.name;
-    if(roleEl) roleEl.textContent = user.role;
+    if (nameEl) nameEl.textContent = user.name;
+    if (roleEl) roleEl.textContent = user.role;
 
     return user;
 }

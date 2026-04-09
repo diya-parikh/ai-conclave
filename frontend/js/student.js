@@ -24,7 +24,7 @@ async function loadMyResults() {
                 <td>${row.exam_name || 'Assignment'}</td>
                 <td>
                     ${row.percentage !== null ? 
-                        `<span style="color:var(--primary);font-weight:700;">${row.percentage.toFixed(1)}%</span> (${row.total_marks}/${row.max_marks})` 
+                        `<span style="color:var(--primary);font-weight:700;">${parseFloat(row.percentage).toFixed(1)}%</span> (${parseFloat(row.total_marks || 0).toFixed(1)}/${parseFloat(row.max_marks || 0).toFixed(1)})` 
                         : '-'}
                 </td>
                 <td>

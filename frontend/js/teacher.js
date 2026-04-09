@@ -29,7 +29,7 @@ async function loadDashboard() {
         const stats = await api.get('/results/dashboard');
         document.getElementById('stat-total').textContent = stats.total_evaluations;
         document.getElementById('stat-students').textContent = stats.total_students;
-        document.getElementById('stat-avg').textContent = stats.average_score ? `${stats.average_score.toFixed(1)}%` : 'N/A';
+        document.getElementById('stat-avg').textContent = stats.average_score ? `${parseFloat(stats.average_score).toFixed(1)}%` : 'N/A';
     } catch(e) {
         console.error('Failed to load dashboard stats', e);
     }
@@ -54,7 +54,7 @@ async function loadRecentEvaluations() {
                     <div style="font-size:0.75rem;color:var(--text-muted)">${row.student_email || ''}</div>
                 </td>
                 <td>${row.subject || '-'}</td>
-                <td>${row.percentage !== null ? row.percentage.toFixed(1) + '%' : '-'}</td>
+                <td>${parseFloat(row.percentage) !== null && row.percentage !== null ? parseFloat(row.percentage).toFixed(1) + '%' : '-'}</td>
                 <td>${row.grade || '-'}</td>
                 <td><span class="status-badge status-${row.status}">${row.status}</span></td>
                 <td>

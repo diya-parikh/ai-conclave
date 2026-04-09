@@ -28,7 +28,7 @@ from typing import Dict, List, Tuple
 
 
 class PostProcessor:
-    LM_STUDIO_URL: str = "http://192.168.28.1:1234/v1/chat/completions"
+    LM_STUDIO_URL: str = "http://127.0.0.1:1234/v1/chat/completions"
     MODEL_NAME: str    = "qwen/qwen3-vl-4b"
     MAX_TOKENS: int    = 2048
     TEMPERATURE: float = 0
