@@ -72,27 +72,31 @@ async def ingest_knowledge(
         f.write(content)
 
     try:
-        # Run ingestion pipeline
-        ingestion_service = IngestionService()
-        file_type = file.content_type or "application/octet-stream"
-        chunks_created = await ingestion_service.ingest(
-            file_path=file_path,
-            file_type=file_type,
-            subject=subject,
-            teacher_id=str(teacher.id),
-            db=db,
-        )
-
-        # Create knowledge document record
+        # Create knowledge document record FIRST to get a real ID
         knowledge_doc = KnowledgeDocument(
             teacher_id=teacher.id,
             filename=file.filename,
             file_path=file_path,
             subject=subject,
             document_type=document_type,
-            total_chunks=chunks_created,
+            total_chunks=0,
         )
         db.add(knowledge_doc)
+        await db.flush()  # assigns knowledge_doc.id
+
+        # Run ingestion pipeline with the real knowledge_document_id
+        ingestion_service = IngestionService()
+        file_type = file.content_type or "application/octet-stream"
+        chunks_created = await ingestion_service.ingest(
+            file_path=file_path,
+            file_type=file_type,
+            subject=subject,
+            knowledge_document_id=str(knowledge_doc.id),
+            db=db,
+        )
+
+        # Update chunk count
+        knowledge_doc.total_chunks = chunks_created
         await db.flush()
 
         return KnowledgeIngestResponse(

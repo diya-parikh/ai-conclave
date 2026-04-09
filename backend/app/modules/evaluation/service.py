@@ -612,3 +612,75 @@ async def evaluate(
         "chain_of_thought"  : score_result["chain_of_thought"],
         "shap_attribution"  : shap_result,
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Class wrapper  (used by app.services.pipeline_service)
+# ─────────────────────────────────────────────────────────────────────────────
+
+class EvaluationService:
+    """
+    Thin class wrapper around the module-level ``evaluate`` function.
+
+    Adapts the rich evaluation output into the flat schema that
+    ``ResultService.process_results()`` and the ``/evaluate`` endpoint expect:
+        question_id, extracted_answer, marks_awarded, feedback,
+        contradictions, confidence_score
+    """
+
+    async def evaluate(
+        self,
+        question_id: str,
+        answer: str,
+        context: list[dict],
+        max_marks: float = 10.0,
+    ) -> dict:
+        """
+        Evaluate a single student answer against RAG-retrieved context.
+
+        Parameters
+        ----------
+        question_id : canonical Q<N> identifier
+        answer      : the student's original answer text
+        context     : list of RAG-retrieved dicts, each with a ``content`` key
+        max_marks   : maximum marks for this question
+
+        Returns
+        -------
+        Dict matching the schema expected by ResultService / evaluate endpoint.
+        """
+        # Build synthetic model-answer from aggregated RAG context
+        model_answer_text = "\n".join(c.get("content", "") for c in context)
+
+        student_json = {
+            "question_id": question_id,
+            "answer": answer,
+            "diagram_present": False,
+        }
+        model_answer_json = {
+            "question_id": question_id,
+            "answer": model_answer_text,
+        }
+
+        # Run the full 4-stage evaluation pipeline
+        raw = await evaluate(
+            student_json=student_json,
+            model_answer_json=model_answer_json,
+            max_marks=max_marks,
+        )
+
+        # ── Map to the flat schema the API layer expects ─────────────────
+        param_scores = raw.get("parameter_scores", {})
+        num_params = max(len(param_scores), 1)
+        avg_normalised = sum(
+            min(v / max_marks, 1.0) for v in param_scores.values()
+        ) / num_params
+
+        return {
+            "question_id":      question_id,
+            "extracted_answer": answer,
+            "marks_awarded":    raw.get("final_grade", 0.0),
+            "feedback":         raw.get("rationale", ""),
+            "contradictions":   raw.get("contradictions", []),
+            "confidence_score": round(avg_normalised, 2),
+        }

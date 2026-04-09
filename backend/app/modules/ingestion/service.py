@@ -34,7 +34,7 @@ class IngestionService:
         file_path: str,
         file_type: str,
         subject: str,
-        teacher_id: str,
+        knowledge_document_id: str,
         db: AsyncSession,
     ) -> int:
         """
@@ -44,7 +44,7 @@ class IngestionService:
             file_path: Path to the uploaded file.
             file_type: MIME type of the file.
             subject: Academic subject.
-            teacher_id: ID of the uploading teacher.
+            knowledge_document_id: ID of the parent KnowledgeDocument record.
             db: Database session.
 
         Returns:
@@ -60,11 +60,9 @@ class IngestionService:
         cleaned_text = self.preprocessor.preprocess(raw_text)
 
         # Step 3: Index into vector store
-        # Note: knowledge_document_id is set after the record is created
-        # in the endpoint. This is a simplified flow for the starter code.
         chunks_created = await self.indexing_service.index_document(
             document_text=cleaned_text,
-            knowledge_document_id=teacher_id,  # Placeholder — updated by endpoint
+            knowledge_document_id=knowledge_document_id,
             db=db,
         )
 
